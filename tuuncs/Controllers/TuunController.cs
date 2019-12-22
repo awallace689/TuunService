@@ -37,23 +37,41 @@ namespace tuuncs.Controllers
         [Route("track/{id}")]
         public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
-            await initializeSpotifyService();
             return Ok(await getTrack(id));
         }
 
 
         public async Task<string> getTrack(string id)
         {
+            if (_spotify == null)
+            {
+                await InitializeSpotifyService();
+            }
+
             FullTrack track = await _spotify.GetTrackAsync(id);
             if (track.HasError())
             {
-                string errStr = "Error Status: " + track.Error.Status + '\n' + "Error Msg: " + track.Error.Message;
-                return errStr;
+                if (track.Error.Status == 401)
+                {
+                    // Refresh token
+                    await InitializeSpotifyService();
+                    Console.WriteLine("Refreshing token!");
+                }
+                else
+                {
+                    return JsonConvert.SerializeObject(track.Error, Formatting.Indented);
+                }
+            }
+
+            // If refreshing token did not fix error.
+            if (track.HasError())
+            {
+                return JsonConvert.SerializeObject(track.Error, Formatting.Indented);
             }
 
             return JsonConvert.SerializeObject(track, Formatting.Indented);
         }
-        public async Task initializeSpotifyService()
+        public async Task InitializeSpotifyService()
         {
             CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
             Token token = await auth.GetToken();
