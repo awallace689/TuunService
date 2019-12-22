@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
+using SpotifyAPI.Web.Enums;
+using SpotifyAPI.Web.Models;
 
 namespace tuuncs.Controllers
 {
@@ -20,9 +21,15 @@ namespace tuuncs.Controllers
         }
 
         [HttpGet]
-        public string Get()
+        public async Task<string> Get()
         {
-            return new string("This is Tuun now!");
+            return await asyncFunction("This is my string!");
+        }
+
+        public async Task<string> asyncFunction(string str)
+        {
+            string asyncStr = await Task.FromResult(str);
+            return asyncStr;
         }
     }
 }
