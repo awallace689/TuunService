@@ -9,11 +9,11 @@ namespace tuuncs.Controllers
 {
     [ApiController]
     [Route("/Tuun/proof")]
-    public class Tuun : ControllerBase
+    public class TuunController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
 
-        public Tuun(ILogger<Tuun> logger)
+        public TuunController(ILogger<Tuun> logger)
         {
             _logger = logger;
         }
