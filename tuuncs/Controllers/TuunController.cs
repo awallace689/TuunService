@@ -9,6 +9,7 @@ using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
 using Secrets;
+using Newtonsoft.Json;
 
 namespace tuuncs.Controllers
 {
@@ -28,22 +29,29 @@ namespace tuuncs.Controllers
         [Route("")]
         public IActionResult Get()
         {
-            return Ok("Route to /Tuun/proof for proof of concept!");
+            return Ok("Route to /Tuun/track for proof of concept!");
         }
 
         [HttpGet]
-        [Route("proof")]
-        public async Task<IActionResult> proof()
+        [Route("track")]
+        [Route("track/{id}")]
+        public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
             await initializeSpotifyService();
-            return Ok(await BlessTheRain());
+            return Ok(await getTrack(id));
         }
 
 
-        public async Task<string> BlessTheRain()
+        public async Task<string> getTrack(string id)
         {
-            FullTrack track = await _spotify.GetTrackAsync("2374M0fQpWi3dLnB54qaLX");
-            return track.Name;
+            FullTrack track = await _spotify.GetTrackAsync(id);
+            if (track.HasError())
+            {
+                string errStr = "Error Status: " + track.Error.Status + '\n' + "Error Msg: " + track.Error.Message;
+                return errStr;
+            }
+
+            return JsonConvert.SerializeObject(track, Formatting.Indented);
         }
         public async Task initializeSpotifyService()
         {
