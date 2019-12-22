@@ -10,7 +10,7 @@ using SpotifyAPI.Web.Models;
 namespace tuuncs.Controllers
 {
     [ApiController]
-    [Route("/Tuun/proof")]
+    [Route("Tuun")]
     public class TuunController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
@@ -21,9 +21,18 @@ namespace tuuncs.Controllers
         }
 
         [HttpGet]
-        public async Task<string> Get()
+        [Route("")]
+        public IActionResult Get()
         {
-            return await asyncFunction("This is my string!");
+            return Ok("Route to /Tuun/proof for proof of concept!");
+        }
+
+        [HttpGet]
+        [Route("proof")]
+        public async Task<IActionResult> proof()
+        {
+            IActionResult str = Ok(await asyncFunction("This is my async string!"));
+            return Ok(str);
         }
 
         public async Task<string> asyncFunction(string str)
