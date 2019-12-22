@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace tuuncs.Controllers
 {
     [ApiController]
-    [Route("Tuun")]
+    [Route("spotify")]
     public class TuunController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
@@ -29,7 +29,7 @@ namespace tuuncs.Controllers
         [Route("")]
         public IActionResult Get()
         {
-            return Ok("Route to /Tuun/track for proof of concept!");
+            return Ok("Route to /spotify/track for proof of concept!");
         }
 
         [HttpGet]
