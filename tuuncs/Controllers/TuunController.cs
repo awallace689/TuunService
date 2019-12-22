@@ -31,8 +31,7 @@ namespace tuuncs.Controllers
         [Route("proof")]
         public async Task<IActionResult> proof()
         {
-            IActionResult str = Ok(await asyncFunction("This is my async string!"));
-            return Ok(str);
+            return Ok(await asyncFunction("This is my async string!"));
         }
 
         public async Task<string> asyncFunction(string str)
