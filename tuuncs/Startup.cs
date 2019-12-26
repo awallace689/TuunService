@@ -15,6 +15,7 @@ namespace tuuncs
 {
     public class Startup
     {
+        readonly string AllowTuunApplications = "_allowTuunApplications";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -25,6 +26,16 @@ namespace tuuncs
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(AllowTuunApplications,
+                builder =>
+                {
+                    builder.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
             services.AddControllers();
         }
 
@@ -41,6 +52,8 @@ namespace tuuncs
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors(AllowTuunApplications);
 
             app.UseEndpoints(endpoints =>
             {
