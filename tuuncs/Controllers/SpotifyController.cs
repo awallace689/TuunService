@@ -30,7 +30,10 @@ namespace tuuncs.Controllers
         [Route("")]
         public IActionResult Get()
         {
-            return Ok("Route to /spotify/track for proof of concept!");
+            return Ok("Route to /spotify/track[/{songid}] to get song data from spotify!\n" +
+                "Route to /db/template to read document from database!\n" +
+                "Route to /db/dbTrackList to get list of tracks selected from database!\n" +
+                "Route to /db/write to write to the 'WriteTest' collection in database!\n");
         }
 
         [HttpGet]
