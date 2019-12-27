@@ -39,6 +39,11 @@ namespace tuuncs.Controllers
             return _collection.Find(new BsonDocument()).First().ToString();
         }
 
+
+        /* Projections let you SELECT what is shown from document in database.
+         * Use [BsonDocument].ToJson() before returning result, ASP.NET can crash
+         * and throw exception when automatically converting some Bson objects to Json. 
+         */
         [HttpGet]
         [Route("dbTrackList")]
         public IActionResult getList()
@@ -56,8 +61,7 @@ namespace tuuncs.Controllers
             }
         }
 
-
-        // Should be a post, eventually...
+        // Should be a POST, eventually...
         [HttpGet]
         [Route("write")]
         public IActionResult write()

@@ -42,6 +42,7 @@ namespace tuuncs.Controllers
         }
 
 
+        // Non-async implementation is likely to throw exception.
         public async Task<List<FullTrack>> getTracks(string id)
         {
             List<FullTrack> trackList = new List<FullTrack>();
@@ -79,6 +80,7 @@ namespace tuuncs.Controllers
             return trackList;
         }
 
+        // Non-async implementation is likely to throw exception.
         public async Task InitializeSpotifyService()
         {
             CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
