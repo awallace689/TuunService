@@ -61,8 +61,7 @@ namespace tuuncs.Controllers
             }
         }
 
-        // Should be a POST, eventually...
-        [HttpGet]
+        [HttpPost]
         [Route("write")]
         public IActionResult write()
         {

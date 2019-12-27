@@ -41,13 +41,21 @@ namespace tuuncs.Controllers
         [Route("track/{id}")]
         public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
-            return Ok(await getTracks(id));
+            try
+            {
+                return Ok(await getTracks(id));
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
 
         // Non-async implementation is likely to throw exception.
         public async Task<List<FullTrack>> getTracks(string id)
-        {
+        { 
             List<FullTrack> trackList = new List<FullTrack>();
             if (_spotify == null)
             {
@@ -67,14 +75,14 @@ namespace tuuncs.Controllers
                     }
                     else
                     {
-                        throw new Exception(JsonConvert.SerializeObject(track));
+                        throw new Exception(JsonConvert.SerializeObject(track.Error));
                     }
                 }
 
                 // If refreshing token did not fix error.
                 if (track.HasError())
                 {
-                    throw new Exception(JsonConvert.SerializeObject(track));
+                    throw new Exception(JsonConvert.SerializeObject(track.Error));
                 }
 
                 trackList.Add(track);
