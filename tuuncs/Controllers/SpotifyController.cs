@@ -10,17 +10,18 @@ using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
 using Secrets;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace tuuncs.Controllers
 {
     [ApiController]
     [Route("spotify")]
-    public class TuunController : ControllerBase
+    public class SpotifyController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
         private static SpotifyWebAPI _spotify;
 
-        public TuunController(ILogger<Tuun> logger)
+        public SpotifyController(ILogger<Tuun> logger)
         {
             _logger = logger;
         }
@@ -35,50 +36,50 @@ namespace tuuncs.Controllers
         [HttpGet]
         [Route("track")]
         [Route("track/{id}")]
-        public IActionResult getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
+        public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
-            return Ok(getTracks(id));
+            return Ok(await getTracks(id));
         }
 
 
-        public IActionResult getTracks(string id)
+        public async Task<List<FullTrack>> getTracks(string id)
         {
             List<FullTrack> trackList = new List<FullTrack>();
             if (_spotify == null)
             {
-                InitializeSpotifyService();
+                await InitializeSpotifyService();
             }
 
             for (int i = 0; i < 10; i++)
             {
-                FullTrack track = _spotify.GetTrack(id);
+                FullTrack track = await _spotify.GetTrackAsync(id);
                 if (track.HasError())
                 {
                     if (track.Error.Status == 401)
                     {
                         // Refresh token
-                        InitializeSpotifyService();
+                        await InitializeSpotifyService();
                         Console.WriteLine("Refreshing token!");
                     }
                     else
                     {
-                        return StatusCode(StatusCodes.Status500InternalServerError, track.Error);
+                        throw new Exception(JsonConvert.SerializeObject(track));
                     }
                 }
 
                 // If refreshing token did not fix error.
                 if (track.HasError())
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, track.Error);
+                    throw new Exception(JsonConvert.SerializeObject(track));
                 }
 
                 trackList.Add(track);
             }
 
-            return Ok(trackList);
+            return trackList;
         }
 
-        public async void InitializeSpotifyService()
+        public async Task InitializeSpotifyService()
         {
             CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
             Token token = await auth.GetToken();

@@ -15,8 +15,8 @@ using Newtonsoft.Json;
 namespace tuuncs.Controllers
 {
     [ApiController]
-    [Route("Tuun")]
-    public class TemplateController : ControllerBase
+    [Route("db")]
+    public class MongoController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
 
@@ -24,7 +24,7 @@ namespace tuuncs.Controllers
         private IMongoDatabase _database;
         private IMongoCollection<BsonDocument> _collection;
 
-        public TemplateController(ILogger<Tuun> logger)
+        public MongoController(ILogger<Tuun> logger)
         {
             _logger = logger;
             _client = new MongoClient(Secret._MongoClient);
@@ -48,31 +48,29 @@ namespace tuuncs.Controllers
             var res = _collection.Find(new BsonDocument()).Project(projection).First();
             if (res != null)
             {
-                return Ok(JsonConvert.SerializeObject((res["playlists"].AsBsonArray)[0], Formatting.Indented));
+                return Ok(res["playlists"][0].ToJson());
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, res.ToString());
+                return StatusCode(StatusCodes.Status500InternalServerError, res.ToJson());
             }
         }
 
-      /*  class Room
+
+        // Should be a post, eventually...
+        [HttpGet]
+        [Route("write")]
+        public IActionResult write()
         {
-            public ObjectId id { get; set; }
+            _collection = _database.GetCollection<BsonDocument>("WriteTest");
+            var document = new BsonDocument
+            {
+                {"test", "Test" }
+            };
 
-            [BsonElement("owner")]
-            public string owner { get; set; }
+            _collection.InsertOne(document);
 
-            [BsonElement("active")]
-            public bool active { get; set; }
-
-            //Array<Array<string>>
-            [BsonElement("playlists")]
-            public Array playlists { get; set; }
-
-            //Array<string>
-            [BsonElement("members")]
-            public Array members { get; set; }
-        }*/
+            return Ok();
+        }
     }
 }
