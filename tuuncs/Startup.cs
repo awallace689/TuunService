@@ -15,9 +15,7 @@ namespace tuuncs
 {
     public class Startup
     {
-        // CORS policy name declaration
         readonly string AllowTuunApplications = "_allowTuunApplications";
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
