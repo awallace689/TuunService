@@ -11,6 +11,7 @@ namespace tuuncs.Services
 {
     public interface ISpotifyService
     {
+        // TODO: Create 'Track' interface and implementation to combine FullTrack and SongAnalysis objects.
         public Task<FullTrack> GetTrack(string id);
         public Task<IList<FullTrack>> GetTracks(IList<string> tracks);
     }
