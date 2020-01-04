@@ -4,13 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Secrets;
-using MongoDB.Bson.Serialization.Attributes;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using tuuncs.Services;
 
 namespace tuuncs.Controllers
 {
@@ -20,23 +18,21 @@ namespace tuuncs.Controllers
     { 
         private readonly ILogger<Tuun> _logger;
 
-        private MongoClient _client;
+        private MongoService _mongo;
         private IMongoDatabase _database;
         private IMongoCollection<BsonDocument> _collection;
 
-        public MongoController(ILogger<Tuun> logger)
+        public MongoController(ILogger<Tuun> logger, MongoService mongo)
         {
             _logger = logger;
-            _client = new MongoClient(Secret._MongoClient);
-            _database = _client.GetDatabase("Tuun");
-            _collection = _database.GetCollection<BsonDocument>("LiveRooms");
+            _mongo = mongo;
         }
 
         [HttpGet]
         [Route("template")]
         public string Get()
         {
-            return _collection.Find(new BsonDocument()).First().ToString();
+            return _mongo.Get("LiveRooms")?.ToJson();
         }
 
 
@@ -45,19 +41,17 @@ namespace tuuncs.Controllers
          * and throw exception when automatically converting some Bson objects to Json. 
          */
         [HttpGet]
-        [Route("dbTrackList")]
+        [Route("tracklist")]
         public IActionResult getList()
         {
-            _collection = _database.GetCollection<BsonDocument>("Rooms");
-            var projection = Builders<BsonDocument>.Projection.Include("playlists").Exclude("_id");
-            var res = _collection.Find(new BsonDocument()).Project(projection).First();
+            string res = _mongo.GetPlaylist();
             if (res != null)
             {
-                return Ok(res["playlists"][0].ToJson());
+                return Ok(res);
             }
             else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, res.ToJson());
+                return StatusCode(StatusCodes.Status500InternalServerError, "Action returned null.");
             }
         }
 
@@ -65,15 +59,21 @@ namespace tuuncs.Controllers
         [Route("write")]
         public IActionResult write()
         {
-            _collection = _database.GetCollection<BsonDocument>("WriteTest");
             var document = new BsonDocument
             {
                 {"test", "Test" }
             };
+            
+            try
+            {
+                _mongo.WriteDocument("WriteTest", document);
+                return Ok();
+            }
 
-            _collection.InsertOne(document);
-
-            return Ok();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

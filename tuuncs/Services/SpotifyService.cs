@@ -13,20 +13,32 @@ namespace tuuncs.Services
 {
     public class SpotifyService : ISpotifyService
     {
-        private SpotifyWebAPI _spotify;
+        public SpotifyWebAPI client;
         
-        public SpotifyService() {
-            Initialize();
+        public SpotifyService() { }
+
+        public async Task Initialize()
+        {
+            CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
+            Token token = await auth.GetToken();
+            client = new SpotifyWebAPI()
+            {
+                AccessToken = token.AccessToken,
+                TokenType = token.TokenType
+            };
         }
+
         public async Task<FullTrack> GetTrack(string id)
         {
-            FullTrack track = await _spotify.GetTrackAsync(id);
+            FullTrack track = await client.GetTrackAsync(id);
             if (track.HasError())
             {
                 if (track.Error.Status == 401)
                 {
                     // Refresh token
-                    Initialize();
+                    await Initialize();
+                    track = await client.GetTrackAsync(id);
+
                     Console.WriteLine("Refreshing token!");
                 }
                 else
@@ -47,20 +59,16 @@ namespace tuuncs.Services
         public async Task<IList<FullTrack>> GetTracks(IList<string> tracks)
         {
             List<FullTrack> trackList = new List<FullTrack>();
-            if (_spotify == null)
-            {
-                Initialize();
-            }
-
             foreach (string id in tracks)
             {
-                FullTrack track = await _spotify.GetTrackAsync(id);
+                FullTrack track = await client.GetTrackAsync(id);
                 if (track.HasError())
                 {
                     if (track.Error.Status == 401)
                     {
                         // Refresh token
-                        Initialize();
+                        await Initialize();
+                        track = await client.GetTrackAsync(id);
                         Console.WriteLine("Refreshing token!");
                     }
                     else
@@ -81,15 +89,6 @@ namespace tuuncs.Services
             return trackList;
         }
 
-        public async void Initialize()
-        {
-            CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
-            Token token = await auth.GetToken();
-            _spotify = new SpotifyWebAPI()
-            {
-                AccessToken = token.AccessToken,
-                TokenType = token.TokenType
-            };
-        }
+
     }
 }

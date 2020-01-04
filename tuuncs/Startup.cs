@@ -37,7 +37,14 @@ namespace tuuncs
                         .AllowAnyMethod();
                 });
             });
-            services.AddSingleton<ISpotifyService>(new SpotifyService());
+
+            // Delay startup until service has initialized.
+            SpotifyService spotifyService = new SpotifyService();
+            spotifyService.Initialize().Wait();
+            services.AddSingleton<ISpotifyService>(spotifyService);
+
+            services.AddSingleton(new MongoService());
+
             services.AddControllers();
         }
 

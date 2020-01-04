@@ -13,6 +13,5 @@ namespace tuuncs.Services
     {
         public Task<FullTrack> GetTrack(string id);
         public Task<IList<FullTrack>> GetTracks(IList<string> tracks);
-        public void Initialize();
     }
 }
