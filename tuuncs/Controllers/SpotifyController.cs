@@ -11,6 +11,7 @@ using SpotifyAPI.Web.Models;
 using Secrets;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using tuuncs.Services;
 
 namespace tuuncs.Controllers
 {
@@ -19,11 +20,12 @@ namespace tuuncs.Controllers
     public class SpotifyController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
-        private static SpotifyWebAPI _spotify;
+        private readonly ISpotifyService _spotify;
 
-        public SpotifyController(ILogger<Tuun> logger)
+        public SpotifyController(ILogger<Tuun> logger, ISpotifyService spotify)
         {
             _logger = logger;
+            _spotify = spotify;
         }
 
         [HttpGet]
@@ -36,6 +38,17 @@ namespace tuuncs.Controllers
                 "POST to /db/write to write to the 'WriteTest' collection in database!\n");
         }
 
+
+        public async Task<IList<FullTrack>> GetTracks(string id)
+        {
+            List<string> trackList = new List<string>();
+            for (int i = 0; i < 10; i++)
+            {
+                trackList.Add(id);
+            }
+            return await _spotify.GetTracks(trackList);
+        }
+
         [HttpGet]
         [Route("track")]
         [Route("track/{id}")]
@@ -43,64 +56,13 @@ namespace tuuncs.Controllers
         {
             try
             {
-                return Ok(await getTracks(id));
+                return Ok(await GetTracks(id));
             }
 
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
-        }
-
-
-        // Non-async implementation is likely to throw exception.
-        public async Task<List<FullTrack>> getTracks(string id)
-        { 
-            List<FullTrack> trackList = new List<FullTrack>();
-            if (_spotify == null)
-            {
-                await InitializeSpotifyService();
-            }
-
-            for (int i = 0; i < 10; i++)
-            {
-                FullTrack track = await _spotify.GetTrackAsync(id);
-                if (track.HasError())
-                {
-                    if (track.Error.Status == 401)
-                    {
-                        // Refresh token
-                        await InitializeSpotifyService();
-                        Console.WriteLine("Refreshing token!");
-                    }
-                    else
-                    {
-                        throw new Exception(JsonConvert.SerializeObject(track.Error));
-                    }
-                }
-
-                // If refreshing token did not fix error.
-                if (track.HasError())
-                {
-                    throw new Exception(JsonConvert.SerializeObject(track.Error));
-                }
-
-                trackList.Add(track);
-            }
-
-            return trackList;
-        }
-
-        // Non-async implementation is likely to throw exception.
-        public async Task InitializeSpotifyService()
-        {
-            CredentialsAuth auth = new CredentialsAuth(Secret._clientID, Secret._clientSecret);
-            Token token = await auth.GetToken();
-            _spotify = new SpotifyWebAPI()
-            {
-                AccessToken = token.AccessToken,
-                TokenType = token.TokenType
-            };
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using tuuncs.Services;
 
 namespace tuuncs
 {
@@ -36,6 +37,7 @@ namespace tuuncs
                         .AllowAnyMethod();
                 });
             });
+            services.AddSingleton<ISpotifyService>(new SpotifyService());
             services.AddControllers();
         }
 
