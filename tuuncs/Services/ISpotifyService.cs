@@ -14,7 +14,7 @@ namespace tuuncs.Services
         // TODO: Create 'Track' interface and implementation to combine FullTrack and SongAnalysis objects.
         //       If we decide not to use this API library, we won't have to change controller code as long
         //       as the replacement extends the interface.
-        public Task<FullTrack> GetTrack(string id);
-        public Task<IList<FullTrack>> GetTracks(IList<string> tracks);
+        Task<FullTrack> GetTrack(string id);
+        Task<IList<FullTrack>> GetTracks(IList<string> tracks);
     }
 }
