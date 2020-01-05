@@ -39,13 +39,9 @@ namespace tuuncs.Controllers
         }
 
 
-        public async Task<IList<FullTrack>> GetTracks(string id)
+        public async Task<IList<FullTrack>> GetTracks(List<string> trackList)
         {
-            List<string> trackList = new List<string>();
-            for (int i = 0; i < 10; i++)
-            {
-                trackList.Add(id);
-            }
+            
             return await _spotify.GetTracks(trackList);
         }
 
@@ -54,9 +50,15 @@ namespace tuuncs.Controllers
         [Route("track/{id}")]
         public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
+            List<string> trackList = new List<string>();
+            for (int i = 0; i < 10; i++)
+            {
+                trackList.Add(id);
+            }
+
             try
             {
-                return Ok(await GetTracks(id));
+                return Ok(await GetTracks(trackList));
             }
 
             catch (Exception ex)
