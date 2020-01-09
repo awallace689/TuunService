@@ -9,4 +9,4 @@
 # Usage
 1) Install Postman to send custom HTTP Requests to the endpoints in the project. (Disable SSL in Visual Studio)
 2) OR Navigate to URL of endpoint in browser to see response contents.
-3) OR Make request from front-end after registering front-end's domain on back-end's CORS policy.
+3) OR Make request from front-end.
