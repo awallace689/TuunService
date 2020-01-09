@@ -3,7 +3,8 @@
 1) Install Visual Studio 2019.
 2) With Visual Studio 2019 Installer, install ASP.NET and Cross-Platform .NET software packages.
 3) Open project in Visual Studio 2019.
-4) Run project in debug mode (with IIS Express on Windows).
+4) Create launchSettings.json in Properties/ and copy/paste the settings for your machine into it.
+5) Run project in debug mode (with IIS Express on Windows).
 
 # Usage
 1) Install Postman to send custom HTTP Requests to the endpoints in the project. (Disable SSL in Visual Studio)
