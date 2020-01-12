@@ -69,7 +69,6 @@ namespace tuuncs.Controllers
                 _mongo.WriteDocument("WriteTest", document);
                 return Ok();
             }
-
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
