@@ -19,10 +19,10 @@ namespace tuuncs.Controllers
     [Route("spotify")]
     public class SpotifyController : ControllerBase
     { 
-        private readonly ILogger<Tuun> _logger;
+        private readonly ILogger<SpotifyController> _logger;
         private readonly ISpotifyService _spotify;
 
-        public SpotifyController(ILogger<Tuun> logger, ISpotifyService spotify)
+        public SpotifyController(ILogger<SpotifyController> logger, ISpotifyService spotify)
         {
             _logger = logger;
             _spotify = spotify;

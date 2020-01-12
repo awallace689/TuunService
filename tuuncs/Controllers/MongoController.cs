@@ -16,10 +16,10 @@ namespace tuuncs.Controllers
     [Route("db")]
     public class MongoController : ControllerBase
     { 
-        private readonly ILogger<Tuun> _logger;
+        private readonly ILogger<MongoController> _logger;
         private MongoService _mongo;
 
-        public MongoController(ILogger<Tuun> logger, MongoService mongo)
+        public MongoController(ILogger<MongoController> logger, MongoService mongo)
         {
             _logger = logger;
             _mongo = mongo;
