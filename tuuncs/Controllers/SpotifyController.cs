@@ -40,8 +40,7 @@ namespace tuuncs.Controllers
 
 
         public async Task<IList<FullTrack>> GetTracks(List<string> trackList)
-        {
-            
+        {         
             return await _spotify.GetTracks(trackList);
         }
 

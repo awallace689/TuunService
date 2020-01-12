@@ -17,10 +17,7 @@ namespace tuuncs.Controllers
     public class MongoController : ControllerBase
     { 
         private readonly ILogger<Tuun> _logger;
-
         private MongoService _mongo;
-        private IMongoDatabase _database;
-        private IMongoCollection<BsonDocument> _collection;
 
         public MongoController(ILogger<Tuun> logger, MongoService mongo)
         {

@@ -24,7 +24,6 @@ namespace tuuncs.Services
         public List<BsonDocument> Get(string collection, ProjectionDefinition<BsonDocument> projection=null)
         {
             _collection = _database.GetCollection<BsonDocument>(collection);
-
             if (projection == null)
             {
                 var res = _collection.Find(new BsonDocument()).ToList();
@@ -41,7 +40,6 @@ namespace tuuncs.Services
         public BsonDocument GetFirst(string collection, ProjectionDefinition<BsonDocument> projection=null)
         {
             _collection = _database.GetCollection<BsonDocument>(collection);
-
             if (projection == null) 
             {
                 var res = _collection.Find(new BsonDocument()).First();
