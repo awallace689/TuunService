@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace tuuncs.Services
 {
-    public class SpotifyService : ISpotifyService
+    public class SpotifyService
     {
         public SpotifyWebAPI client;
         

@@ -20,9 +20,9 @@ namespace tuuncs.Controllers
     public class SpotifyController : ControllerBase
     { 
         private readonly ILogger<SpotifyController> _logger;
-        private readonly ISpotifyService _spotify;
+        private readonly SpotifyService _spotify;
 
-        public SpotifyController(ILogger<SpotifyController> logger, ISpotifyService spotify)
+        public SpotifyController(ILogger<SpotifyController> logger, SpotifyService spotify)
         {
             _logger = logger;
             _spotify = spotify;

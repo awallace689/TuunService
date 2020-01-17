@@ -41,7 +41,7 @@ namespace tuuncs
             // Delay startup until service has initialized.
             SpotifyService spotifyService = new SpotifyService();
             spotifyService.Initialize().Wait();
-            services.AddSingleton<ISpotifyService>(spotifyService);
+            services.AddSingleton(spotifyService);
 
             services.AddSingleton(new MongoService());
 
