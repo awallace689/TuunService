@@ -44,6 +44,7 @@ namespace tuuncs
             services.AddSingleton(spotifyService);
 
             services.AddSingleton(new MongoService());
+            services.AddSingleton(new RoomService());
 
             services.AddControllers();
         }
