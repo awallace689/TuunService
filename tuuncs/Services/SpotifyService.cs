@@ -88,5 +88,12 @@ namespace tuuncs.Services
 
             return trackList;
         }
+
+        public IEnumerable<SimplePlaylist> GetUserPlaylists(string uid)
+        {
+            Paging<SimplePlaylist> playlists = client.GetUserPlaylists(uid);
+
+            return playlists.Items;
+        }
     }
 }

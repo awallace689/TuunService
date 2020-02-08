@@ -65,5 +65,20 @@ namespace tuuncs.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [HttpGet]
+        [Route("playlists/{uid}")]
+        public IActionResult GetPlaylistsWithUserId(string uid)
+        {
+            IList<FullPlaylist> fullPlaylists = new List<FullPlaylist>();
+
+            IEnumerable<SimplePlaylist> simplePlaylists = _spotify.GetUserPlaylists(uid);
+            foreach (SimplePlaylist playlist in simplePlaylists)
+            {
+                fullPlaylists.Add(_spotify.client.GetPlaylist(playlist.Id));
+            }
+
+            return Ok(fullPlaylists);
+        }
     }
 }
