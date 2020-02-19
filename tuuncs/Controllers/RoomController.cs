@@ -19,7 +19,8 @@ namespace tuuncs.Controllers
             _roomService = roomService;
         }
 
-        // POST api/values
+        // Gets host username from request url, creates options object from
+        // json with identical fields in request body.
         [HttpPost]
         [Route("create/{host}")]
         public IActionResult CreateRoom(string host, [FromBody] Options options)
