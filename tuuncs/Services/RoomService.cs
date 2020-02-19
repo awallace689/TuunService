@@ -8,8 +8,7 @@ namespace tuuncs.Services
     public class RoomService
     {
         private Random _random { get; set; }
-        public Dictionary<int, Room> RoomsTable {get; set;}
-        private HashSet<int> TakenIds { get; set; }
+        public Dictionary<int, Room> RoomsTable { get; set;  }
 
         public RoomService()
         {
@@ -21,7 +20,6 @@ namespace tuuncs.Services
         {
             int id = GenerateRoomCode();
             return new Room(id, options, host);
-
         }
 
         public void AddRoom(Room room)
@@ -35,14 +33,13 @@ namespace tuuncs.Services
             while (true)
             {
                 code = _random.Next(0, 9999);
-                if (TakenIds.Contains(code))
+                if (RoomsTable.ContainsKey(code))
                 {
                     for (int i = 0; i < 100; i++)
                     {
                         code += 1;
-                        if (!TakenIds.Contains(code))
+                        if (!RoomsTable.ContainsKey(code))
                         {
-                            TakenIds.Add(code);
                             return code;
                         }
                     }
