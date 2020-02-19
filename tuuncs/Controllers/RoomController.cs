@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using tuuncs.Services;
+using tuuncs.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,38 +19,44 @@ namespace tuuncs.Controllers
             _roomService = roomService;
         }
 
-        // GET: api/values
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // POST api/values
         [HttpPost]
         [Route("create")]
-        public string CreateRoom()
+        public IActionResult CreateRoom([FromBody] CreateRoomJson roomData)
         {
-            return _roomService.GenerateRoomCode();
+            try
+            {
+                if (roomData.Options == null || roomData.Host == null)
+                {
+                    return StatusCode(400, "Invalid JSON provided in request body.");
+                }
+
+                Room room = _roomService.CreateRoom(roomData.Options, roomData.Host);
+                _roomService.AddRoom(room);
+                return Ok();
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        // For testing result of '/create'
+        [HttpGet]
+        [Route("getRooms")]
+        public IActionResult GetRooms()
         {
+            return Ok(_roomService.RoomsTable);
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+    }
+
+    // Json in request body with fields corresponding to the fields defined below
+    // will be automatically converted to this object.
+    public class CreateRoomJson
+    {
+        public Options Options { get; set; }
+        public string Host { get; set; }
     }
 }
