@@ -21,17 +21,17 @@ namespace tuuncs.Controllers
 
         // POST api/values
         [HttpPost]
-        [Route("create")]
-        public IActionResult CreateRoom([FromBody] CreateRoomJson roomData)
+        [Route("create/{host}")]
+        public IActionResult CreateRoom(string host, [FromBody] Options options)
         {
             try
             {
-                if (roomData.Options == null || roomData.Host == null)
+                if (options == null)
                 {
                     return StatusCode(400, "Invalid JSON provided in request body.");
                 }
 
-                Room room = _roomService.CreateRoom(roomData.Options, roomData.Host);
+                Room room = _roomService.CreateRoom(options, host);
                 _roomService.AddRoom(room);
                 return Ok();
             }
@@ -49,14 +49,5 @@ namespace tuuncs.Controllers
         {
             return Ok(_roomService.RoomsTable);
         }
-
-    }
-
-    // Json in request body with fields corresponding to the fields defined below
-    // will be automatically converted to this object.
-    public class CreateRoomJson
-    {
-        public Options Options { get; set; }
-        public string Host { get; set; }
     }
 }
