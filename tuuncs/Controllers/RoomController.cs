@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using tuuncs.Services;
 using tuuncs.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace tuuncs.Controllers
 {
