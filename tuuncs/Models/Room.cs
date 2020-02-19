@@ -28,7 +28,7 @@ namespace tuuncs.Models
      */
     public class Options
     {
-        public Genre Genre { get; set; }
+        public string Genre { get; set; }
         public double Popularity { get; set; }
         // Add additional customizations (for use w/ model)
     }
@@ -39,11 +39,5 @@ namespace tuuncs.Models
     public class Profile
     {
         // Add Song analysis fields here, corresponding to SongAnalysis object fields from Spotify library
-    }
-
-    public enum Genre
-    {
-        // Add genres here:
-        // ExampleGenre = 1,
     }
 }
