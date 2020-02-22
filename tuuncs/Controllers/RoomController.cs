@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using tuuncs.Services;
 using tuuncs.Models;
+using Newtonsoft.Json;
 
 
 namespace tuuncs.Controllers
@@ -33,6 +34,7 @@ namespace tuuncs.Controllers
 
                 Room room = _roomService.CreateRoom(options, host);
                 _roomService.AddRoom(room);
+                _roomService.AddUser(room.Id, new User(host));
                 return Ok();
             }
 
@@ -44,10 +46,31 @@ namespace tuuncs.Controllers
 
         // For testing result of '/create'
         [HttpGet]
-        [Route("getRooms")]
+        [Route("get")]
         public IActionResult GetRooms()
         {
-            return Ok(_roomService.RoomsTable);
+            return Ok(JsonConvert.SerializeObject(_roomService.RoomsTable));
+        }
+
+        [HttpPost]
+        [Route("user/add/{roomId}")]
+        public IActionResult AddUser(int roomId, [FromBody] User user)
+        {
+            if (user == null)
+            {
+                return StatusCode(400, "Invalid JSON provided in request body.");
+            }
+
+            try
+            {
+                _roomService.AddUser(roomId, user);
+            }
+            catch (Exception)
+            {
+                return StatusCode(400, "");
+            }
+
+            return Ok();
         }
     }
 }

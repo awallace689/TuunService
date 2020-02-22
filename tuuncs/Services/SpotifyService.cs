@@ -14,7 +14,7 @@ namespace tuuncs.Services
     public class SpotifyService
     {
         public SpotifyWebAPI client;
-        
+
         public SpotifyService() { }
 
         public async Task Initialize()

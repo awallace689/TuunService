@@ -27,6 +27,22 @@ namespace tuuncs.Services
             RoomsTable.Add(room.Id, room);
         }
 
+        public void AddUser(int roomId, User user)
+        {
+            if (roomId == null)
+            {
+                throw new Exception("Room id cannot be null.");
+            }
+            else if (!RoomsTable[roomId].Users.ContainsKey(user.Username))
+            {
+                RoomsTable[roomId].Users.Add(user.Username, user);
+            }
+            else
+            {
+                throw new Exception("User already exists in room.");
+            }
+        }
+
         public int GenerateRoomCode()
         {
             int code;

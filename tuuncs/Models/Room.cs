@@ -8,7 +8,7 @@ namespace tuuncs.Models
     public class Room
     {
         public int Id { get; set; }
-        public List<User> Users { get; set; }
+        public Dictionary<string, User> Users { get; set; }
         public Options Options { get; set; }
         public Profile Profile { get; set; }
         // Username of room host
@@ -16,7 +16,7 @@ namespace tuuncs.Models
         public Room(int id, Options options, string host)
         {
             Id = id;
-            Users = new List<User>();
+            Users = new Dictionary<string, User>();
             Options = options;
             Profile = new Profile();
             Host = host;
