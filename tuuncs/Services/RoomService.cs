@@ -29,17 +29,25 @@ namespace tuuncs.Services
 
         public void AddUser(int roomId, User user)
         {
-            if (roomId == null)
-            {
-                throw new Exception("Room id cannot be null.");
-            }
-            else if (!RoomsTable[roomId].Users.ContainsKey(user.Username))
+            if (!RoomsTable[roomId].Users.ContainsKey(user.Username))
             {
                 RoomsTable[roomId].Users.Add(user.Username, user);
             }
             else
             {
                 throw new Exception("User already exists in room.");
+            }
+        }
+
+        public void RemoveUser(int roomId, User user)
+        {
+            if (RoomsTable[roomId].Users.ContainsKey(user.Username))
+            {
+                RoomsTable[roomId].Users.Remove(user.Username);
+            }
+            else
+            {
+                throw new Exception("User does not exist in room.");
             }
         }
 
