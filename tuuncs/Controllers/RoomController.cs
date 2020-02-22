@@ -15,7 +15,8 @@ namespace tuuncs.Controllers
     {
         private readonly RoomService _roomService;
 
-        public RoomController(RoomService roomService) {
+        public RoomController(RoomService roomService)
+        {
             _roomService = roomService;
         }
 
@@ -71,6 +72,19 @@ namespace tuuncs.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpDelete]
+        public void DeleteRoom(int id)
+        {
+            try
+            {
+                RoomsTable.Remove(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }
