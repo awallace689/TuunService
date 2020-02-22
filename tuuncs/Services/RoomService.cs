@@ -8,7 +8,7 @@ namespace tuuncs.Services
     public class RoomService
     {
         private Random _random { get; set; }
-        public Dictionary<int, Room> RoomsTable { get; set;  }
+        private Dictionary<int, Room> RoomsTable { get; set;  }
 
         public RoomService()
         {
@@ -40,6 +40,23 @@ namespace tuuncs.Services
             else
             {
                 throw new Exception("User already exists in room.");
+            }
+        }
+
+        public Dictionary<int, Room> GetAll()
+        {
+            return RoomsTable;
+        }
+
+        public Room GetOne(int roomId)
+        {
+            if (RoomsTable.ContainsKey(roomId))
+            {
+                return RoomsTable[roomId];
+            }
+            else
+            {
+                throw new Exception("Invalid room id.");
             }
         }
 

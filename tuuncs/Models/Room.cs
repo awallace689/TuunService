@@ -13,6 +13,7 @@ namespace tuuncs.Models
         public Profile Profile { get; set; }
         // Username of room host
         public string Host { get; set; }
+        public DateTime Timestamp { get; set; }
         public Room(int id, Options options, string host)
         {
             Id = id;
@@ -20,6 +21,7 @@ namespace tuuncs.Models
             Options = options;
             Profile = new Profile();
             Host = host;
+            Timestamp = DateTime.Now;
         }
     }
 

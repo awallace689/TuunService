@@ -15,8 +15,7 @@ namespace tuuncs.Controllers
     {
         private readonly RoomService _roomService;
 
-        public RoomController(RoomService roomService)
-        {
+        public RoomController(RoomService roomService) {
             _roomService = roomService;
         }
 
@@ -47,10 +46,24 @@ namespace tuuncs.Controllers
 
         // For testing result of '/create'
         [HttpGet]
-        [Route("get")]
+        [Route("getAll")]
         public IActionResult GetRooms()
         {
-            return Ok(JsonConvert.SerializeObject(_roomService.RoomsTable));
+            return Ok(JsonConvert.SerializeObject(_roomService.GetAll().ToList()));
+        }
+
+        [HttpGet]
+        [Route("get/{roomId}")]
+        public IActionResult GetRoom(int roomId)
+        {
+            try
+            {
+                return Ok(JsonConvert.SerializeObject(_roomService.GetOne(roomId)));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, ex);
+            }
         }
 
         [HttpPost]
@@ -72,19 +85,6 @@ namespace tuuncs.Controllers
             }
 
             return Ok();
-        }
-
-        [HttpDelete]
-        public void DeleteRoom(int id)
-        {
-            try
-            {
-                RoomsTable.Remove(id);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
     }
 }
