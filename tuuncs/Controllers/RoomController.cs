@@ -52,15 +52,16 @@ namespace tuuncs.Controllers
         }
 
         [HttpDelete]
-        public void DeleteRoom(int id)
+        public IActionResult DeleteRoom(int id)
         {
             try
             {
-                RoomsTable.Remove(id);
+                _roomService.DeleteRoom(id);
+                return Ok(200);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
     }

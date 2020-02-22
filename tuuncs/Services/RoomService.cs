@@ -51,5 +51,10 @@ namespace tuuncs.Services
                 }
             }
         }
+
+        public void DeleteRoom(int id)
+        {
+            RoomsTable.Remove(id);
+        }
     }
 }
