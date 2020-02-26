@@ -14,6 +14,7 @@ namespace tuuncs.Services
         public MongoClient client; 
         private IMongoDatabase _database;
         private IMongoCollection<BsonDocument> _collection;
+        public bool LoggingEnabled = true;
 
         public MongoService() 
         {
@@ -65,6 +66,23 @@ namespace tuuncs.Services
         {
             _collection = _database.GetCollection<BsonDocument>(collection);
             _collection.InsertOne(doc);
+        }
+
+        public void Log(List<KeyValuePair<string, string>> logDoc, string actionName, string collection)
+        {
+            if (LoggingEnabled)
+            {
+                logDoc.Add(new KeyValuePair<string, string>("timestamp", DateTime.Now.ToString()));
+                logDoc.Add(new KeyValuePair<string, string>("action", actionName));
+                var logDict = new Dictionary<string, string>(logDoc);
+
+                var bson = new BsonDocument(logDict);
+                WriteDocument(collection, bson);
+            }
+            else
+            {
+                return;
+            }
         }
     }
 }

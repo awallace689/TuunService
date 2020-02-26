@@ -21,11 +21,13 @@ namespace tuuncs.Controllers
     { 
         private readonly ILogger<SpotifyController> _logger;
         private readonly SpotifyService _spotify;
+        private readonly MongoService _mongo;
 
-        public SpotifyController(ILogger<SpotifyController> logger, SpotifyService spotify)
+        public SpotifyController(ILogger<SpotifyController> logger, SpotifyService spotify, MongoService mongo)
         {
             _logger = logger;
             _spotify = spotify;
+            _mongo = mongo;
         }
 
         [HttpGet]
@@ -40,7 +42,13 @@ namespace tuuncs.Controllers
 
 
         public async Task<IList<FullTrack>> GetTracks(List<string> trackList)
-        {         
+        {
+            var logDoc = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("Count", trackList.Count.ToString())
+            };
+            
+            _mongo.Log(logDoc, "GetTracks", "SpotifyLog");
             return await _spotify.GetTracks(trackList);
         }
 
@@ -49,15 +57,15 @@ namespace tuuncs.Controllers
         [Route("track/{id}")]
         public async Task<IActionResult> getTrackWithID(string id="2374M0fQpWi3dLnB54qaLX")
         {
-            List<string> trackList = new List<string>();
-            for (int i = 0; i < 10; i++)
+            var logDoc = new List<KeyValuePair<string, string>>()
             {
-                trackList.Add(id);
-            }
+                new KeyValuePair<string, string>("trackId", id)
+            };
 
             try
             {
-                return Ok(await GetTracks(trackList));
+                _mongo.Log(logDoc, "getTrackWithID", "SpotifyLog");
+                return Ok(await _spotify.GetTrack(id));
             }
 
             catch (Exception ex)
@@ -78,6 +86,13 @@ namespace tuuncs.Controllers
                 fullPlaylists.Add(_spotify.client.GetPlaylist(playlist.Id));
             }
 
+            var logDoc = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("user", uid),
+                new KeyValuePair<string, string>("count", fullPlaylists.Count.ToString())
+            };
+
+            _mongo.Log(logDoc, "GetPlaylistsWithUserId", "SpotifyLog");
             return Ok(fullPlaylists);
         }
     }

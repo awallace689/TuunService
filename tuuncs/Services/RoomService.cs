@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using tuuncs.Models;
+using System.Linq;
 
 namespace tuuncs.Services
 {
@@ -39,15 +40,51 @@ namespace tuuncs.Services
             }
         }
 
-        public void RemoveUser(int roomId, User user)
+        public void SetHost(int roomId, string user)
         {
-            if (RoomsTable[roomId].Users.ContainsKey(user.Username))
+            if (!RoomsTable.ContainsKey(roomId))
             {
-                RoomsTable[roomId].Users.Remove(user.Username);
+                throw new Exception("Room does not exist.");
+            }
+            if (!RoomsTable[roomId].Users.ContainsKey(user))
+            {
+                throw new Exception("User does not exist in room.");
+            }
+
+            RoomsTable[roomId].Host = user;
+        }
+
+        public void RemoveUser(int roomId, string user)
+        {
+            var room = RoomsTable[roomId];
+            if (room.Users.ContainsKey(user))
+            {
+                if (room.Users.Count > 1)
+                {
+                    room.Users.Remove(user);
+                    room.Host = room.Users[room.Users.Keys.ToList()[0]].Username;
+                }
+                else
+                {
+                    DeleteRoom(roomId);
+                }
             }
             else
             {
                 throw new Exception("User does not exist in room.");
+            }
+        }
+
+        public void DeleteRoom(int roomId)
+        {
+            if (RoomsTable.ContainsKey(roomId))
+            {
+                RoomsTable.Remove(roomId);
+            }
+
+            else
+            {
+                throw new Exception("Room does not exist.");
             }
         }
 

@@ -8,6 +8,7 @@ using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
 using Secrets;
 using Newtonsoft.Json;
+using tuuncs.Services;
 
 namespace tuuncs.Services
 {
@@ -85,6 +86,7 @@ namespace tuuncs.Services
 
                 trackList.Add(track);
             }
+
 
             return trackList;
         }
