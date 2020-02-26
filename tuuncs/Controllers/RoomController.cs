@@ -14,17 +14,25 @@ namespace tuuncs.Controllers
     public class RoomController : Controller
     {
         private readonly RoomService _roomService;
+        private readonly MongoService _mongo;
 
-        public RoomController(RoomService roomService) {
+        public RoomController(RoomService roomService, MongoService mongo) {
             _roomService = roomService;
+            _mongo = mongo;
         }
 
         // Gets host username from request url, creates options object from
         // json with identical fields in request body.
         [HttpPost]
-        [Route("create/{host}")]
-        public IActionResult CreateRoom(string host, [FromBody] Options options)
+        [Route("create/{id}/{host}")]
+        public IActionResult CreateRoom(int id, string host, [FromBody] Options options)
         {
+            var logDoc = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("id", id.ToString()),
+                new KeyValuePair<string, string>("host", host)
+            };
+
             try
             {
                 if (options == null)
@@ -32,14 +40,19 @@ namespace tuuncs.Controllers
                     return StatusCode(400, "Invalid JSON provided in request body.");
                 }
 
-                Room room = _roomService.CreateRoom(options, host);
+                Room room = _roomService.CreateRoom(id, options, host);
                 _roomService.AddRoom(room);
                 _roomService.AddUser(room.Id, new User(host));
+
+                logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+                _mongo.Log(logDoc, "CreateRoom", "RoomsLog");
                 return Ok();
             }
 
             catch (Exception ex)
             {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                _mongo.Log(logDoc, "CreateRoom", "RoomsLog");
                 return StatusCode(500, ex);
             }
         }
@@ -56,12 +69,22 @@ namespace tuuncs.Controllers
         [Route("get/{roomId}")]
         public IActionResult GetRoom(int roomId)
         {
+            var logDoc = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("id", roomId.ToString()),
+            };
+
             try
             {
-                return Ok(JsonConvert.SerializeObject(_roomService.GetOne(roomId)));
+                var result = JsonConvert.SerializeObject(_roomService.GetOne(roomId));
+                logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
+                return Ok(result);
             }
             catch (Exception ex)
             {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
                 return StatusCode(400, ex);
             }
         }
@@ -75,16 +98,33 @@ namespace tuuncs.Controllers
                 return StatusCode(400, "Invalid JSON provided in request body.");
             }
 
+            var logDoc = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("id", roomId.ToString()),
+                new KeyValuePair<string, string>("user", user.Username)
+            };
+
             try
             {
                 _roomService.AddUser(roomId, user);
             }
             catch (Exception)
             {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
                 return StatusCode(400, "");
             }
 
+            logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+            _mongo.Log(logDoc, "GetRoom", "RoomsLog");
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("genCode")]
+        public IActionResult GenerateCode()
+        {
+            return Ok(_roomService.GenerateRoomCode());
         }
     }
 }

@@ -34,22 +34,7 @@ namespace tuuncs.Controllers
         [Route("")]
         public IActionResult Get()
         {
-            return Ok("Route to /spotify/track[/{songid}] to get song data from spotify!\n" +
-                "Route to /db/template to read document from database!\n" +
-                "Route to /db/tracklist to get list of tracks selected from database!\n" +
-                "POST to /db/write to write to the 'WriteTest' collection in database!\n");
-        }
-
-
-        public async Task<IList<FullTrack>> GetTracks(List<string> trackList)
-        {
-            var logDoc = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("Count", trackList.Count.ToString())
-            };
-            
-            _mongo.Log(logDoc, "GetTracks", "SpotifyLog");
-            return await _spotify.GetTracks(trackList);
+            return Ok("It's alive!");
         }
 
         [HttpGet]
@@ -64,12 +49,18 @@ namespace tuuncs.Controllers
 
             try
             {
+
+                var result = await _spotify.GetTrack(id);
+
+                logDoc.Add(new KeyValuePair<string, string>("success", "true"));
                 _mongo.Log(logDoc, "getTrackWithID", "SpotifyLog");
-                return Ok(await _spotify.GetTrack(id));
+                return Ok(result);
             }
 
             catch (Exception ex)
             {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                _mongo.Log(logDoc, "getTrackWithID", "SpotifyLog");
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
@@ -78,22 +69,32 @@ namespace tuuncs.Controllers
         [Route("playlists/{uid}")]
         public IActionResult GetPlaylistsWithUserId(string uid)
         {
-            IList<FullPlaylist> fullPlaylists = new List<FullPlaylist>();
-
-            IEnumerable<SimplePlaylist> simplePlaylists = _spotify.GetUserPlaylists(uid);
-            foreach (SimplePlaylist playlist in simplePlaylists)
-            {
-                fullPlaylists.Add(_spotify.client.GetPlaylist(playlist.Id));
-            }
-
             var logDoc = new List<KeyValuePair<string, string>>()
             {
                 new KeyValuePair<string, string>("user", uid),
-                new KeyValuePair<string, string>("count", fullPlaylists.Count.ToString())
             };
 
-            _mongo.Log(logDoc, "GetPlaylistsWithUserId", "SpotifyLog");
-            return Ok(fullPlaylists);
+            try
+            {
+                IList<FullPlaylist> fullPlaylists = new List<FullPlaylist>();
+
+                IEnumerable<SimplePlaylist> simplePlaylists = _spotify.GetUserPlaylists(uid);
+                foreach (SimplePlaylist playlist in simplePlaylists)
+                {
+                    fullPlaylists.Add(_spotify.client.GetPlaylist(playlist.Id));
+                }
+
+                logDoc.Add(new KeyValuePair<string, string>("count", fullPlaylists.Count.ToString()));
+                logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+                _mongo.Log(logDoc, "GetPlaylistsWithUserId", "SpotifyLog");
+                return Ok(fullPlaylists);
+            }
+            catch (Exception ex)
+            {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                return StatusCode(500, ex);
+            }
+            
         }
     }
 }

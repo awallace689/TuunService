@@ -17,9 +17,8 @@ namespace tuuncs.Services
             RoomsTable = new Dictionary<int, Room>();
         }
 
-        public Room CreateRoom(Options options, string host)
+        public Room CreateRoom(int id, Options options, string host)
         {
-            int id = GenerateRoomCode();
             return new Room(id, options, host);
         }
 
