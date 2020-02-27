@@ -45,6 +45,7 @@ namespace tuuncs
 
             services.AddSingleton(new MongoService());
             services.AddSingleton(new RoomService());
+            services.AddSingleton(new SongService());
 
             services.AddControllers();
         }

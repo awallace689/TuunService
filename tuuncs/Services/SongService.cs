@@ -1,9 +1,9 @@
 ﻿using System;
 namespace tuuncs.Services
 {
-    public class UserService
+    public class SongService
     {
-        public UserService()
+        public SongService()
         {
         }
     }
