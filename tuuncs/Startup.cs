@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using tuuncs.Services;
+using tuuncs.Hubs;
 
 namespace tuuncs
 {
@@ -34,7 +35,8 @@ namespace tuuncs
                 {
                     builder.WithOrigins("http://localhost:3000")
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
             });
 
@@ -46,12 +48,15 @@ namespace tuuncs
             services.AddSingleton(new MongoService());
             services.AddSingleton(new RoomService());
 
+            services.AddSignalR();
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(AllowTuunApplications);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -63,11 +68,11 @@ namespace tuuncs
 
             app.UseAuthorization();
 
-            app.UseCors(AllowTuunApplications);
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<RoomsHub>("/roomsHub");
             });
         }
     }
