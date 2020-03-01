@@ -44,8 +44,8 @@ namespace tuuncs.Services
 
             if (jsonContent.Length > 500)
             {
-                dynamic json = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonContent);
-                List<FullTrack> tracks = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FullTrack>>(Newtonsoft.Json.JsonConvert.SerializeObject(json.items));
+                dynamic json = JsonConvert.DeserializeObject(jsonContent);
+                List<FullTrack> tracks = JsonConvert.DeserializeObject<List<FullTrack>>(JsonConvert.SerializeObject(json.items));
                 return tracks;
             }
             else
