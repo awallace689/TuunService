@@ -12,6 +12,7 @@ using Secrets;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using tuuncs.Services;
+using tuuncs.Models;
 
 namespace tuuncs.Controllers
 {
@@ -22,12 +23,14 @@ namespace tuuncs.Controllers
         private readonly ILogger<SpotifyController> _logger;
         private readonly SpotifyService _spotify;
         private readonly MongoService _mongo;
+        private readonly AlgoService _algo;
 
-        public SpotifyController(ILogger<SpotifyController> logger, SpotifyService spotify, MongoService mongo)
+        public SpotifyController(ILogger<SpotifyController> logger, SpotifyService spotify, MongoService mongo, AlgoService algo)
         {
             _logger = logger;
             _spotify = spotify;
             _mongo = mongo;
+            _algo = algo;
         }
 
         [HttpGet]
@@ -94,7 +97,18 @@ namespace tuuncs.Controllers
                 logDoc.Add(new KeyValuePair<string, string>("success", "false"));
                 return StatusCode(500, ex);
             }
-            
+        }
+
+        [HttpGet]
+        [Route("test")]
+        public IActionResult test()
+        {
+            HashSet<FullTrack> set = new HashSet<FullTrack>(new FullTrackComparer());
+            var user = new User("asdff01", "BQBMRnJCeBHYsSdQDQfbi3QiWFe1kaSwn8d5DPX_Wmo9 - yH01Bhnh027uqLoPbSZ7IOGcmYGap - A3anow85Eghq690oRKRbM0fnkxrXRCibXFTqqX0CqAyvKfupebWz6tr8kSPhoV4fEPc2oiGErVDG936wU5WNsLCYLb55RlYvmqqju1hfFDIL0FGYUC_xfQjrr8HtwmRSSH_OmWo2nIEV2evzGVbk4cK0RS7KE - lLBZXmQEZOKCHeY1razd - Hqptej8HcQBA");
+            var users = new List<User>() { user };
+            var options = new Options();
+            options.Genres = new List<string>() { "hip hop" };
+            return Ok(_algo.GenerateTrackList(users, options));
         }
     }
 }
