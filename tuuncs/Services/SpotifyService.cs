@@ -40,10 +40,9 @@ namespace tuuncs.Services
                 .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
             HttpResponseMessage resp = await httpClient.SendAsync(requestMessage);
-            string jsonContent = await resp.Content.ReadAsStringAsync();
-
-            if (jsonContent.Length > 500)
+            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
+                string jsonContent = await resp.Content.ReadAsStringAsync();
                 dynamic json = JsonConvert.DeserializeObject(jsonContent);
                 List<FullTrack> tracks = JsonConvert.DeserializeObject<List<FullTrack>>(JsonConvert.SerializeObject(json.items));
                 return tracks;
