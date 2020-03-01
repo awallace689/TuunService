@@ -103,12 +103,18 @@ namespace tuuncs.Controllers
         [Route("test")]
         public IActionResult test()
         {
-            HashSet<FullTrack> set = new HashSet<FullTrack>(new FullTrackComparer());
             var user = new User("asdff01", "BQBMRnJCeBHYsSdQDQfbi3QiWFe1kaSwn8d5DPX_Wmo9 - yH01Bhnh027uqLoPbSZ7IOGcmYGap - A3anow85Eghq690oRKRbM0fnkxrXRCibXFTqqX0CqAyvKfupebWz6tr8kSPhoV4fEPc2oiGErVDG936wU5WNsLCYLb55RlYvmqqju1hfFDIL0FGYUC_xfQjrr8HtwmRSSH_OmWo2nIEV2evzGVbk4cK0RS7KE - lLBZXmQEZOKCHeY1razd - Hqptej8HcQBA");
             var users = new List<User>() { user };
             var options = new Options();
             options.Genres = new List<string>() { "hip hop" };
-            return Ok(_algo.GenerateTrackList(users, options));
+
+            var trackList = _algo.GenerateTrackList(users, options);
+            var res = new List<string>();
+            foreach (FullTrack track in trackList)
+            {
+                res.Add(track.Name + ", " + track.Artists[0].Name);
+            }
+            return Ok(res);
         }
     }
 }
