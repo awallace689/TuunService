@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using tuuncs.Services;
 using tuuncs.Models;
 using Newtonsoft.Json;
+using SpotifyAPI.Web.Models;
 
 
 namespace tuuncs.Controllers
@@ -15,10 +16,26 @@ namespace tuuncs.Controllers
     {
         private readonly RoomService _roomService;
         private readonly MongoService _mongo;
+        private readonly AlgoService _algo;
 
-        public RoomController(RoomService roomService, MongoService mongo) {
+        public RoomController(RoomService roomService, MongoService mongo, AlgoService algo) {
             _roomService = roomService;
             _mongo = mongo;
+            _algo = algo;
+        }
+
+        [HttpGet]
+        [Route("test/{token}")]
+        public async Task<IActionResult> Test(string token)
+        {
+            var tracklist = await _algo.GetRecentlyPlayed(token);
+            List<string> res = new List<string>();
+            foreach (FullTrack track in tracklist)
+            {
+                res.Add(track.Id);
+            }
+
+            return Ok(res);
         }
 
         // Gets host username from request url, creates options object from

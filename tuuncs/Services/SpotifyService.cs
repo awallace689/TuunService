@@ -9,6 +9,7 @@ using SpotifyAPI.Web.Models;
 using Secrets;
 using Newtonsoft.Json;
 using tuuncs.Services;
+using System.Net.Http;
 
 namespace tuuncs.Services
 {
@@ -27,6 +28,30 @@ namespace tuuncs.Services
                 AccessToken = token.AccessToken,
                 TokenType = token.TokenType
             };
+        }
+
+        public async Task<List<FullTrack>> GetRecentlyPlayed(string token)
+        {
+            using var httpClient = new HttpClient();
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/me/top/tracks?limit=50");
+            requestMessage.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            requestMessage.Headers.Accept
+                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            HttpResponseMessage resp = await httpClient.SendAsync(requestMessage);
+            string jsonContent = await resp.Content.ReadAsStringAsync();
+
+            if (jsonContent.Length > 500)
+            {
+                dynamic json = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonContent);
+                List<FullTrack> tracks = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FullTrack>>(Newtonsoft.Json.JsonConvert.SerializeObject(json.items));
+                return tracks;
+            }
+            else
+            {
+                return new List<FullTrack>();
+            }
         }
 
         public async Task<FullTrack> GetTrack(string id)

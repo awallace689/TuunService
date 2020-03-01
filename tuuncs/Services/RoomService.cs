@@ -9,12 +9,19 @@ namespace tuuncs.Services
     public class RoomService
     {
         private Random _random { get; set; }
+        private readonly AlgoService _algo;
         private Dictionary<int, Room> RoomsTable { get; set;  }
 
-        public RoomService()
+        public RoomService(AlgoService algo)
         {
             _random = new Random();
             RoomsTable = new Dictionary<int, Room>();
+            _algo = algo;
+        }
+
+        public void CreatePlaylist(int id)
+        {
+            
         }
 
         public Room CreateRoom(int id, Options options, string host)
