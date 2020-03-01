@@ -25,10 +25,10 @@ namespace tuuncs.Controllers
         }
 
         [HttpGet]
-        [Route("test/{token}")]
-        public async Task<IActionResult> Test(string token)
+        [Route("test")]
+        public IActionResult Test([FromBody] string token)
         {
-            var tracklist = await _algo.GetRecentlyPlayed(token);
+            var tracklist = _algo.GetRecentlyPlayed(token);
             List<string> res = new List<string>();
             foreach (FullTrack track in tracklist)
             {
