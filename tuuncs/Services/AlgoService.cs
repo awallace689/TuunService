@@ -21,29 +21,29 @@ namespace tuuncs.Services
 
         public List<FullTrack> GenerateTrackList(List<User> users, Options options)
         {
-            HashSet<FullTrack> songPool = new HashSet<FullTrack>(new FullTrackComparer());
-            HashSet<FullTrack> sharedSongs = new HashSet<FullTrack>(new FullTrackComparer());
+            HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
+            HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
             Dictionary<FullTrack, HashSet<string>> contributions = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
-            AddPlayed(users, songPool, contributions);
-            AddPlaylists(users, songPool, contributions);
-            FilterByGenre(ref songPool, options);
+            AddPlayed(users, trackPool, contributions);
+            AddPlaylists(users, trackPool, contributions);
+            FilterByGenre(ref trackPool, options);
 
-            foreach (FullTrack track in songPool)
+            foreach (FullTrack track in trackPool)
             {
                 if (contributions[track].Count > 1)
                 {
-                    sharedSongs.Add(track);
+                    sharedTracks.Add(track);
                 }
             }
 
-            songPool.ExceptWith(sharedSongs);
+            trackPool.ExceptWith(sharedTracks);
 
-            IEnumerable<FullTrack> songCollection = sharedSongs.Union(songPool);
+            IEnumerable<FullTrack> songCollection = sharedTracks.Union(trackPool);
             return songCollection.ToList();
         }
 
-        public void AddPlayed(List<User> users, HashSet<FullTrack> songPool, Dictionary<FullTrack, HashSet<string>> contributions)
+        public void AddPlayed(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributions)
         {
             foreach (User user in users)
             {
@@ -51,7 +51,7 @@ namespace tuuncs.Services
                 {
                     foreach (FullTrack track in GetRecentlyPlayed(user.Token))
                     {
-                        if (!songPool.Add(track))
+                        if (!trackPool.Add(track))
                         {
                             contributions[track].Add(user.Username);
                         }
@@ -64,10 +64,10 @@ namespace tuuncs.Services
             }
         }
 
-        public void FilterByGenre(ref HashSet<FullTrack> songPool, Options options)
+        public void FilterByGenre(ref HashSet<FullTrack> trackPool, Options options)
         {
             Dictionary<string, HashSet<FullTrack>> artistDict = new Dictionary<string, HashSet<FullTrack>>();
-            foreach (FullTrack track in songPool)
+            foreach (FullTrack track in trackPool)
             {
                 if (!artistDict.ContainsKey(track.Artists[0].Id))
                 {
@@ -113,17 +113,17 @@ namespace tuuncs.Services
                 }
             }
 
-            songPool = new HashSet<FullTrack>(new FullTrackComparer());
+            trackPool = new HashSet<FullTrack>(new FullTrackComparer());
             foreach (var pair in artistDict)
             {
                 foreach (FullTrack track in pair.Value)
                 {
-                    songPool.Add(track);
+                    trackPool.Add(track);
                 }
             }
         }
 
-        public void AddPlaylists(List<User> users, HashSet<FullTrack> songPool, Dictionary<FullTrack, HashSet<string>> contributions)
+        public void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributions)
         {
             foreach (User user in users)
             {
@@ -133,7 +133,7 @@ namespace tuuncs.Services
                     FullPlaylist fullPlaylist = _spotify.client.GetPlaylist(playlist.Id);
                     foreach (PlaylistTrack pTrack in fullPlaylist.Tracks.Items)
                     {
-                        if (!songPool.Add(pTrack.Track))
+                        if (!trackPool.Add(pTrack.Track))
                         {
                             contributions[pTrack.Track].Add(user.Username);
                         }

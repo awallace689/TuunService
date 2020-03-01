@@ -24,20 +24,6 @@ namespace tuuncs.Controllers
             _algo = algo;
         }
 
-        [HttpGet]
-        [Route("test")]
-        public IActionResult Test([FromBody] string token)
-        {
-            var tracklist = _algo.GetRecentlyPlayed(token);
-            List<string> res = new List<string>();
-            foreach (FullTrack track in tracklist)
-            {
-                res.Add(track.Id);
-            }
-
-            return Ok(res);
-        }
-
         // Gets host username from request url, creates options object from
         // json with identical fields in request body.
         [HttpPost]
