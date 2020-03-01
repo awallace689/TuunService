@@ -66,23 +66,36 @@ namespace tuuncs.Services
                     artistDict[track.Artists[0].Id].Add(track);
                 }
             }
-
+            
+            List<string> artistIds = new List<string>();
+            SeveralArtists artists;
+            int count = artistDict.Keys.Count;
             foreach (string id in artistDict.Keys)
             {
-                System.Threading.Thread.Sleep(50);
-                bool sharesGenre = false;
-                FullArtist artist = _spotify.client.GetArtist(id);
-                foreach (string genre in artist.Genres)
-                {
-                    if (options.Genres.Contains(genre))
-                    {
-                        sharesGenre = true;
-                    }
+                if (artistIds.Count <= 50) {
+                    artistIds.Add(id);
                 }
-
-                if (!sharesGenre)
+                if (artistIds.Count == 50 || id == artistDict.Keys.Last()) 
                 {
-                    artistDict.Remove(id);
+                    artists = _spotify.client.GetSeveralArtists(artistIds);
+
+                    foreach (FullArtist artist in artists.Artists) {
+                        bool sharesGenre = false;
+                        foreach (string genre in artist.Genres)
+                        {
+                            if (options.Genres.Contains(genre))
+                            {
+                                sharesGenre = true;
+                            }
+                        }
+
+                        if (!sharesGenre)
+                        {
+                            artistDict.Remove(artist.Id);
+                        }
+                    }
+
+                    artistIds = new List<string>();
                 }
             }
 
