@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using SpotifyAPI.Web.Models;
 using tuuncs.Models;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace tuuncs.Services
 {
-    public class AlgoService {
+    public class AlgoService
+    {
 
         private readonly SpotifyService _spotify;
         public AlgoService(SpotifyService spotify)
@@ -23,19 +23,27 @@ namespace tuuncs.Services
         {
             HashSet<FullTrack> songPool = new HashSet<FullTrack>(new FullTrackComparer());
             HashSet<FullTrack> sharedSongs = new HashSet<FullTrack>(new FullTrackComparer());
+            Dictionary<FullTrack, HashSet<string>> contributions = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
-            AddPlayed(users, songPool, sharedSongs);
-            AddPlaylists(users, songPool, sharedSongs);
+            AddPlayed(users, songPool, contributions);
+            AddPlaylists(users, songPool, contributions);
             FilterByGenre(ref songPool, options);
-        
-            sharedSongs.IntersectWith(songPool);
+
+            foreach (FullTrack track in songPool)
+            {
+                if (contributions[track].Count > 1)
+                {
+                    sharedSongs.Add(track);
+                }
+            }
+
             songPool.ExceptWith(sharedSongs);
 
             IEnumerable<FullTrack> songCollection = sharedSongs.Union(songPool);
             return songCollection.ToList();
         }
 
-        public void AddPlayed(List<User> users, HashSet<FullTrack> songPool, HashSet<FullTrack> sharedSongs)
+        public void AddPlayed(List<User> users, HashSet<FullTrack> songPool, Dictionary<FullTrack, HashSet<string>> contributions)
         {
             foreach (User user in users)
             {
@@ -45,7 +53,11 @@ namespace tuuncs.Services
                     {
                         if (!songPool.Add(track))
                         {
-                            sharedSongs.Add(track);
+                            contributions[track].Add(user.Username);
+                        }
+                        else
+                        {
+                            contributions.Add(track, new HashSet<string>() { user.Username });
                         }
                     }
                 }
@@ -66,20 +78,22 @@ namespace tuuncs.Services
                     artistDict[track.Artists[0].Id].Add(track);
                 }
             }
-            
+
             List<string> artistIds = new List<string>();
             SeveralArtists artists;
             int count = artistDict.Keys.Count;
             foreach (string id in artistDict.Keys)
             {
-                if (artistIds.Count <= 50) {
+                if (artistIds.Count <= 50)
+                {
                     artistIds.Add(id);
                 }
-                if (artistIds.Count == 50 || id == artistDict.Keys.Last()) 
+                if (artistIds.Count == 50 || id == artistDict.Keys.Last())
                 {
                     artists = _spotify.client.GetSeveralArtists(artistIds);
 
-                    foreach (FullArtist artist in artists.Artists) {
+                    foreach (FullArtist artist in artists.Artists)
+                    {
                         bool sharesGenre = false;
                         foreach (string genre in artist.Genres)
                         {
@@ -109,7 +123,7 @@ namespace tuuncs.Services
             }
         }
 
-        public void AddPlaylists(List<User> users, HashSet<FullTrack> songPool, HashSet<FullTrack> sharedSongs)
+        public void AddPlaylists(List<User> users, HashSet<FullTrack> songPool, Dictionary<FullTrack, HashSet<string>> contributions)
         {
             foreach (User user in users)
             {
@@ -121,7 +135,11 @@ namespace tuuncs.Services
                     {
                         if (!songPool.Add(pTrack.Track))
                         {
-                            sharedSongs.Add(pTrack.Track);
+                            contributions[pTrack.Track].Add(user.Username);
+                        }
+                        else
+                        {
+                            contributions.Add(pTrack.Track, new HashSet<string>() { user.Username });
                         }
                     }
                 }

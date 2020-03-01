@@ -103,8 +103,8 @@ namespace tuuncs.Controllers
         [Route("test")]
         public IActionResult test()
         {
-            var user = new User("asdff01", "BQBMRnJCeBHYsSdQDQfbi3QiWFe1kaSwn8d5DPX_Wmo9 - yH01Bhnh027uqLoPbSZ7IOGcmYGap - A3anow85Eghq690oRKRbM0fnkxrXRCibXFTqqX0CqAyvKfupebWz6tr8kSPhoV4fEPc2oiGErVDG936wU5WNsLCYLb55RlYvmqqju1hfFDIL0FGYUC_xfQjrr8HtwmRSSH_OmWo2nIEV2evzGVbk4cK0RS7KE - lLBZXmQEZOKCHeY1razd - Hqptej8HcQBA");
-            var users = new List<User>() { user };
+            var user1 = new User("asdff01", "BQBQCl3etv0sgDJOujvOSmlqMFl3gLvdsjc0lk0IpxWYchtTpjDTUuef9Cl_dknCBg96fU_vzP5zCjSMbwGUFpK8ByGkQy9yMTIPtie75wCY-Au1iki-MU_z82-sb9qC2p4oi1Z0QubgEcD_6Zp9g7UbccdYga_qdSG39b5lSYHYhEklgsxyeI59E8ySpiTdffPETPPJEfOWRaDdVQxtVyF7T5h24MA-Bmjq3wo00JCFS_3gAEj017Pt2rgprp_CtNfZ0w6lig");
+            var users = new List<User>() { user1 };
             var options = new Options();
             options.Genres = new List<string>() { "hip hop" };
 
