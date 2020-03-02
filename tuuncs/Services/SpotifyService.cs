@@ -53,6 +53,37 @@ namespace tuuncs.Services
             }
         }
 
+        public async Task<List<AudioFeatures>> GetSeveralAudioFeatures(List<string> ids) {
+            if (ids.Count > 100) {
+                throw new Exception("Id limit 100 exceeded.");
+            }
+
+            string idsString = "";
+            foreach (string id in ids) {
+                string str = id == ids.Last() ? id : id + ",";
+                idsString += str;
+            }
+            using var httpClient = new HttpClient();
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/audio-features/?ids=" + idsString);
+            requestMessage.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", client.AccessToken);
+            requestMessage.Headers.Accept
+                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            HttpResponseMessage resp = await httpClient.SendAsync(requestMessage);
+            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                string jsonContent = await resp.Content.ReadAsStringAsync();
+                dynamic json = JsonConvert.DeserializeObject(jsonContent);
+                List<AudioFeatures> analysisObjects = JsonConvert.DeserializeObject<List<AudioFeatures>>(JsonConvert.SerializeObject(json.audio_features));
+                return analysisObjects;
+            }
+            else
+            {
+                throw new Exception("Token error.");
+            }
+        }
+
         public async Task<FullTrack> GetTrack(string id)
         {
             FullTrack track = await client.GetTrackAsync(id);

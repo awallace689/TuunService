@@ -19,31 +19,62 @@ namespace tuuncs.Services
             _spotify = spotify;
         }
 
-        public List<FullTrack> GenerateTrackList(List<User> users, Options options)
+        public async Task<List<AudioFeatures>> GenerateTrackList(List<User> users, Options options)
         {
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
             HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
-            Dictionary<FullTrack, HashSet<string>> contributions = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
+            Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
-            AddPlayed(users, trackPool, contributions);
-            AddPlaylists(users, trackPool, contributions);
+            AddPlayed(users, trackPool, contributors);
+            AddPlaylists(users, trackPool, contributors);
             FilterByGenre(ref trackPool, options);
+            PopulateSharedTracks(trackPool, sharedTracks, contributors);
 
+            HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
+            HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
+
+            IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
+            return songCollection.ToList();
+        }
+
+        public async Task<HashSet<AudioFeatures>> GetAudioFeatures(IEnumerable<FullTrack> tracks)
+        {
+            var trackIds = new List<string>();
+            var audioFeatures = new List<AudioFeatures>();
+            var result = new List<AudioFeatures>();
+
+            foreach (FullTrack track in tracks)
+            {
+                if (trackIds.Count <= 100)
+                {
+                    trackIds.Add(track.Id);
+                }
+                if (trackIds.Count == 100 || track.Id == tracks.Last().Id)
+                {
+                    audioFeatures = await _spotify.GetSeveralAudioFeatures(trackIds);
+                    result.AddRange(audioFeatures);
+
+                    audioFeatures = new List<AudioFeatures>();
+                }
+            }
+
+            return new HashSet<AudioFeatures>(result);
+        }
+
+        public void PopulateSharedTracks(HashSet<FullTrack> trackPool, HashSet<FullTrack> sharedTracks, Dictionary<FullTrack, HashSet<string>> contributors)
+        {
             foreach (FullTrack track in trackPool)
             {
-                if (contributions[track].Count > 1)
+                if (contributors[track].Count > 1)
                 {
                     sharedTracks.Add(track);
                 }
             }
 
             trackPool.ExceptWith(sharedTracks);
-
-            IEnumerable<FullTrack> songCollection = sharedTracks.Union(trackPool);
-            return songCollection.ToList();
         }
 
-        public void AddPlayed(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributions)
+        public void AddPlayed(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
         {
             foreach (User user in users)
             {
@@ -53,11 +84,11 @@ namespace tuuncs.Services
                     {
                         if (!trackPool.Add(track))
                         {
-                            contributions[track].Add(user.Username);
+                            contributors[track].Add(user.Username);
                         }
                         else
                         {
-                            contributions.Add(track, new HashSet<string>() { user.Username });
+                            contributors.Add(track, new HashSet<string>() { user.Username });
                         }
                     }
                 }
@@ -81,7 +112,6 @@ namespace tuuncs.Services
 
             List<string> artistIds = new List<string>();
             SeveralArtists artists;
-            int count = artistDict.Keys.Count;
             foreach (string id in artistDict.Keys)
             {
                 if (artistIds.Count <= 50)
@@ -100,6 +130,7 @@ namespace tuuncs.Services
                             if (options.Genres.Contains(genre))
                             {
                                 sharesGenre = true;
+                                break;
                             }
                         }
 
@@ -123,7 +154,7 @@ namespace tuuncs.Services
             }
         }
 
-        public void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributions)
+        public void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
         {
             foreach (User user in users)
             {
@@ -135,11 +166,11 @@ namespace tuuncs.Services
                     {
                         if (!trackPool.Add(pTrack.Track))
                         {
-                            contributions[pTrack.Track].Add(user.Username);
+                            contributors[pTrack.Track].Add(user.Username);
                         }
                         else
                         {
-                            contributions.Add(pTrack.Track, new HashSet<string>() { user.Username });
+                            contributors.Add(pTrack.Track, new HashSet<string>() { user.Username });
                         }
                     }
                 }
