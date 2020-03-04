@@ -19,8 +19,9 @@ namespace tuuncs.Services
             _spotify = spotify;
         }
 
-        public async Task<List<AudioFeatures>> GenerateTrackList(List<User> users, Options options)
+        public async Task<List<string>> GenerateTrackList(List<User> users, Options options)
         {
+
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
             HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
             Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
@@ -34,7 +35,14 @@ namespace tuuncs.Services
             HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
             IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
-            return songCollection.ToList();
+
+            TuneableTrack averageTrack = GetAverageTrack(songCollection);
+
+            List<string> artistSeed = GetArtistSeed(sharedTracks);
+            List<string> trackSeed = GetTrackSeed(sharedTracks);
+
+            List<string> songIds = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, averageTrack);
+            return songIds;
         }
 
         public async Task<HashSet<AudioFeatures>> GetAudioFeatures(IEnumerable<FullTrack> tracks)
@@ -187,6 +195,82 @@ namespace tuuncs.Services
             {
                 return new List<FullTrack>();
             }
+        }
+
+        public TuneableTrack GetAverageTrack(IEnumerable<AudioFeatures> songs)
+        {
+            AudioFeatures sum = new AudioFeatures();
+            int count = 0;
+            foreach(AudioFeatures song in songs)
+            {
+                count++;
+                sum.Acousticness += song.Acousticness;
+                sum.Danceability += song.Danceability;
+                sum.Energy += song.Energy;
+                sum.Instrumentalness += song.Instrumentalness;
+                sum.Liveness += song.Liveness;
+                sum.Loudness += song.Loudness;
+                sum.Tempo += song.Tempo;
+                sum.Valence += song.Valence;
+                sum.Speechiness += song.Speechiness;
+            }
+
+            TuneableTrack avg = new TuneableTrack();
+
+            avg.Acousticness = sum.Acousticness / count;
+            avg.Danceability = sum.Danceability / count;
+            avg.Energy = sum.Energy / count;
+            avg.Instrumentalness = sum.Instrumentalness / count;
+            avg.Liveness = sum.Liveness / count;
+            avg.Loudness = sum.Loudness / count;
+            avg.Tempo = sum.Tempo / count;
+            avg.Valence = sum.Valence / count;
+            avg.Speechiness = sum.Speechiness / count;
+
+            return avg;
+        }
+
+        public async Task<List<string>> GetRecommendedSongs(List<string> artistSeed, List<string> genreSeed, List<string> trackSeed, TuneableTrack averageSong)
+        {
+            List<SimpleTrack> songs = await _spotify.GetRecommendedSongs(artistSeed, genreSeed, trackSeed, averageSong);
+            List<string> songIds = new List<string>();
+            foreach(SimpleTrack song in songs)
+            {
+                songIds.Add(song.Id);
+            }
+            return songIds;
+        }
+
+        public List<string> GetArtistSeed(HashSet<FullTrack> sharedTracks)
+        {
+            List<string> artistSeed = new List<string>();
+            int count = 0;
+            foreach(FullTrack track in sharedTracks)
+            {
+                artistSeed.Add(track.Artists[0].Id);
+                count++;
+                if(count == 5)
+                {
+                    break;
+                }
+            }
+            return artistSeed;
+        }
+
+        public List<string> GetTrackSeed(HashSet<FullTrack> sharedTracks)
+        {
+            List<string> trackSeed = new List<string>();
+            int count = 0;
+            foreach (FullTrack track in sharedTracks)
+            {
+                trackSeed.Add(track.Id);
+                count++;
+                if (count == 5)
+                {
+                    break;
+                }
+            }
+            return trackSeed;
         }
     }
 }
