@@ -152,5 +152,11 @@ namespace tuuncs.Services
 
             return playlists.Items;
         }
+
+        public async Task<List<SimpleTrack>> GetRecommendedSongs(List<string> artistSeed, List<string> genreSeed, List<string> trackSeed, TuneableTrack averageSong)
+        {
+            Recommendations recommendations = await client.GetRecommendationsAsync(artistSeed, genreSeed, trackSeed, limit: 50,target: averageSong);
+            return recommendations.Tracks;
+        }
     }
 }
