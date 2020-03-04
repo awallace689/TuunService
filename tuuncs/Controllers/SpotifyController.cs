@@ -106,7 +106,7 @@ namespace tuuncs.Controllers
             var user1 = new User("asdff01", "insert token");
             var users = new List<User>() { user1 };
             var options = new Options();
-            options.Genres = new List<string>() { "hip hop" };
+            options.Genres = new List<string>() { "hip-hop" };
             
             var trackList = await _algo.GenerateTrackList(users, options);
             return Ok(trackList);
