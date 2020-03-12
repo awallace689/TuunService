@@ -45,11 +45,9 @@ namespace tuuncs.Controllers
 
                 Room room = _roomService.CreateRoom(id, options, host);
                 _roomService.AddRoom(room);
-                _roomService.AddUser(room.Id, new User(host));
 
                 logDoc.Add(new KeyValuePair<string, string>("success", "true"));
-                _mongo.Log(logDoc, "CreateRoom", "RoomsLog");
-                return Ok();
+                // _mongo.Log(logDoc, "CreateRoom", "RoomsLog");
             }
 
             catch (Exception ex)
@@ -58,6 +56,7 @@ namespace tuuncs.Controllers
                 _mongo.Log(logDoc, "CreateRoom", "RoomsLog");
                 return StatusCode(500, ex);
             }
+            return Ok();
         }
 
         // For testing result of '/create'
@@ -92,36 +91,36 @@ namespace tuuncs.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("user/add/{roomId}")]
-        public IActionResult AddUser(int roomId, [FromBody] User user)
-        {
-            if (user == null)
-            {
-                return StatusCode(400, "Invalid JSON provided in request body.");
-            }
+        // [HttpPost]
+        // [Route("user/add/{roomId}")]
+        // public IActionResult AddUser(int roomId, [FromBody] User user)
+        // {
+        //     if (user == null)
+        //     {
+        //         return StatusCode(400, "Invalid JSON provided in request body.");
+        //     }
 
-            var logDoc = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("id", roomId.ToString()),
-                new KeyValuePair<string, string>("user", user.Username)
-            };
+        //     var logDoc = new List<KeyValuePair<string, string>>()
+        //     {
+        //         new KeyValuePair<string, string>("id", roomId.ToString()),
+        //         new KeyValuePair<string, string>("user", user.Username)
+        //     };
 
-            try
-            {
-                _roomService.AddUser(roomId, user);
-            }
-            catch (Exception)
-            {
-                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
-                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
-                return StatusCode(400, "");
-            }
+        //     try
+        //     {
+        //         _roomService.AddUser(roomId, user);
+        //     }
+        //     catch (Exception)
+        //     {
+        //         logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+        //         _mongo.Log(logDoc, "AddUser", "RoomsLog");
+        //         return StatusCode(400, "");
+        //     }
 
-            logDoc.Add(new KeyValuePair<string, string>("success", "true"));
-            _mongo.Log(logDoc, "GetRoom", "RoomsLog");
-            return Ok();
-        }
+        //     logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+        //     _mongo.Log(logDoc, "AddUser", "RoomsLog");
+        //     return Ok();
+        // }
 
         [HttpGet]
         [Route("genCode")]

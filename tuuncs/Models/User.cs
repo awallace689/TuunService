@@ -10,10 +10,12 @@ namespace tuuncs.Models
     {
         public string Username { get; set; }
         public string? Token { get; set; }
-        public User(string username, string token=null)
+        public User(string username, string token=null, string connectId=null)
         {
             Username = username;
             Token = token;
+            ConnectionId = connectId;
         }
+        public string? ConnectionId { get; set; }
     }
 }

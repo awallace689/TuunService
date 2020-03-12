@@ -10,16 +10,18 @@ namespace tuuncs.Services
     {
         private Random _random { get; set; }
         private readonly AlgoService _algo;
-        private Dictionary<int, Room> RoomsTable { get; set;  }
+        private Dictionary<int, Room> RoomsTable { get; set; }
+        private Dictionary<string, User> UsersTable { get; set; }
 
         public RoomService(AlgoService algo)
         {
             _random = new Random();
             RoomsTable = new Dictionary<int, Room>();
+            UsersTable = new Dictionary<string, User>();
             _algo = algo;
         }
 
-        public void CreatePlaylist(int id)
+        public void CreatePlaylist(List<User> users)
         {
             
         }
@@ -34,18 +36,6 @@ namespace tuuncs.Services
             RoomsTable.Add(room.Id, room);
         }
 
-        public void AddUser(int roomId, User user)
-        {
-            if (!RoomsTable[roomId].Users.ContainsKey(user.Username))
-            {
-                RoomsTable[roomId].Users.Add(user.Username, user);
-            }
-            else
-            {
-                throw new Exception("User already exists in room.");
-            }
-        }
-
         public void SetHost(int roomId, string user)
         {
             if (!RoomsTable.ContainsKey(roomId))
@@ -58,27 +48,6 @@ namespace tuuncs.Services
             }
 
             RoomsTable[roomId].Host = user;
-        }
-
-        public void RemoveUser(int roomId, string user)
-        {
-            var room = RoomsTable[roomId];
-            if (room.Users.ContainsKey(user))
-            {
-                if (room.Users.Count > 1)
-                {
-                    room.Users.Remove(user);
-                    room.Host = room.Users[room.Users.Keys.ToList()[0]].Username;
-                }
-                else
-                {
-                    DeleteRoom(roomId);
-                }
-            }
-            else
-            {
-                throw new Exception("User does not exist in room.");
-            }
         }
 
         public void DeleteRoom(int roomId)

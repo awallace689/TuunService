@@ -19,7 +19,7 @@ namespace tuuncs.Services
             _spotify = spotify;
         }
 
-        public async Task<List<string>> GenerateTrackList(List<User> users, Options options)
+        public async Task<List<SimpleTrack>> GenerateTrackList(List<User> users, Options options)
         {
 
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
@@ -35,14 +35,14 @@ namespace tuuncs.Services
             HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
             IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
-
+            
             TuneableTrack averageTrack = GetAverageTrack(songCollection);
 
             List<string> artistSeed = GetArtistSeed(sharedTracks);
             List<string> trackSeed = GetTrackSeed(sharedTracks);
 
-            List<string> songIds = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, averageTrack);
-            return songIds;
+            List<SimpleTrack> tracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, averageTrack);
+            return tracks;
         }
 
         public async Task<HashSet<AudioFeatures>> GetAudioFeatures(IEnumerable<FullTrack> tracks)
@@ -230,15 +230,10 @@ namespace tuuncs.Services
             return avg;
         }
 
-        public async Task<List<string>> GetRecommendedSongs(List<string> artistSeed, List<string> genreSeed, List<string> trackSeed, TuneableTrack averageSong)
+        public async Task<List<SimpleTrack>> GetRecommendedSongs(List<string> artistSeed, List<string> genreSeed, List<string> trackSeed, TuneableTrack averageSong)
         {
             List<SimpleTrack> songs = await _spotify.GetRecommendedSongs(artistSeed, genreSeed, trackSeed, averageSong);
-            List<string> songIds = new List<string>();
-            foreach(SimpleTrack song in songs)
-            {
-                songIds.Add(song.Id);
-            }
-            return songIds;
+            return songs;
         }
 
         public List<string> GetArtistSeed(HashSet<FullTrack> sharedTracks)

@@ -103,13 +103,19 @@ namespace tuuncs.Controllers
         [Route("test")]
         public async Task<IActionResult> test()
         {
-            var user1 = new User("asdff01", "insert token");
+            var user1 = new User("asdff01", "BQAFwehPEc1l_3HL8PIP3-TuPcwMgMJZZCHhHpfWySDKD5S9wZU2WanAQuWN4Wk6DKAog--0yK21Q4wS2IoOLdLfoNT2uGi9R3-hoc9S8wEYiRVixnHaqTSlbYkCSqun-vU2W6pcp1XDs5zwYOxmK-9qeyeWpGT_PuM-1P636GZo784jOYl30anM1bDgsSGTugXIH9aoYDRIJiJoIBYp0ChUuUGD0ZcYbvQbBF8Xtkk0GwJUnvAq5VZLGL0AlOK8oQ_9_CHb-A");
             var users = new List<User>() { user1 };
             var options = new Options();
             options.Genres = new List<string>() { "hip-hop" };
             
             var trackList = await _algo.GenerateTrackList(users, options);
-            return Ok(trackList);
+
+            var res = new List<string>();
+            foreach (SimpleTrack track in trackList) {
+                res.Add(track.Name + ", " + track.Artists[0].Name);
+            }
+            
+            return Ok(res);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace tuuncs.Models
         // Username of room host
         public string Host { get; set; }
         public DateTime Timestamp { get; set; }
-        public List<FullTrack> Playlist 
+        public List<FullTrack>? Playlist 
         {
             get 
             { 
@@ -41,7 +41,7 @@ namespace tuuncs.Models
             Profile = new Profile();
             Host = host;
             Timestamp = DateTime.Now;
-            Playlist = null;
+            // Playlist = null;
         }
     }
 
