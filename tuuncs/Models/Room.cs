@@ -15,24 +15,7 @@ namespace tuuncs.Models
         // Username of room host
         public string Host { get; set; }
         public DateTime Timestamp { get; set; }
-        public List<FullTrack>? Playlist 
-        {
-            get 
-            { 
-                if (Playlist == null)
-                {
-                    throw new Exception("Playlist has not been generated.");
-                }
-                else
-                {
-                    return Playlist;
-                }
-            }
-            set 
-            { 
-                Playlist = value;  
-            }
-        }
+        public List<FullTrack> Playlist { get; set; }
         public Room(int id, Options options, string host)
         {
             Id = id;
@@ -41,7 +24,7 @@ namespace tuuncs.Models
             Profile = new Profile();
             Host = host;
             Timestamp = DateTime.Now;
-            // Playlist = null;
+            Playlist = null;
         }
     }
 
