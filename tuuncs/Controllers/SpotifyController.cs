@@ -111,7 +111,7 @@ namespace tuuncs.Controllers
             var trackList = await _algo.GenerateTrackList(users, options);
 
             var res = new List<string>();
-            foreach (SimpleTrack track in trackList) {
+            foreach (SimpleTrack track in trackList.Item1) {
                 res.Add(track.Name + ", " + track.Artists[0].Name);
             }
             

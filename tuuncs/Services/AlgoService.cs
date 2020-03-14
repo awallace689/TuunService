@@ -19,7 +19,7 @@ namespace tuuncs.Services
             _spotify = spotify;
         }
 
-        public async Task<List<SimpleTrack>> GenerateTrackList(List<User> users, Options options)
+        public async Task<(List<SimpleTrack>, TuneableTrack)> GenerateTrackList(List<User> users, Options options)
         {
 
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
@@ -42,7 +42,7 @@ namespace tuuncs.Services
             List<string> trackSeed = GetTrackSeed(sharedTracks);
 
             List<SimpleTrack> tracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, averageTrack);
-            return tracks;
+            return (tracks, averageTrack);
         }
 
         public async Task<HashSet<AudioFeatures>> GetAudioFeatures(IEnumerable<FullTrack> tracks)
