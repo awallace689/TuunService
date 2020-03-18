@@ -11,16 +11,46 @@ namespace tuuncs.Services
         private Random _random { get; set; }
         private readonly AlgoService _algo;
         private Dictionary<int, Room> RoomsTable { get; set; }
-        private Dictionary<string, User> UsersTable { get; set; }
+        private Dictionary<User, string> UsersTable { get; set; }
 
         public RoomService(AlgoService algo)
         {
             _random = new Random();
             RoomsTable = new Dictionary<int, Room>();
-            UsersTable = new Dictionary<string, User>();
+            UsersTable = new Dictionary<User, string>(new UserComparer());
             _algo = algo;
         }
 
+        public void AddUser(int roomId, User user, string connectId) 
+        {
+            UpsertUser(user, connectId);
+            RoomsTable[roomId].Users.Add(user);
+        }
+        
+
+        public void UpsertUser(User user, string connectId) 
+        {
+            if (!UsersTable.ContainsKey(user)) 
+            {
+                UsersTable.Add(user, connectId);
+            }
+            else 
+            {
+                UsersTable[user] = connectId;
+                UpdateUserToken(user);
+            }
+        }
+
+        public void UpdateUserToken(User user) 
+        {
+            foreach (User key in UsersTable.Keys) 
+            {
+                if (key.Username == user.Username) 
+                {
+                    key.Token = user.Token;
+                }
+            }
+        }
         public void CreatePlaylist(List<User> users)
         {
             
@@ -42,11 +72,7 @@ namespace tuuncs.Services
             {
                 throw new Exception("Room does not exist.");
             }
-            if (!RoomsTable[roomId].Users.ContainsKey(user))
-            {
-                throw new Exception("User does not exist in room.");
-            }
-
+            
             RoomsTable[roomId].Host = user;
         }
 

@@ -8,14 +8,12 @@ namespace tuuncs.Models
 {
     public class User
     {
-        public string Username { get; set; }
-        public string? Token { get; set; }
-        public User(string username, string token=null, string connectId=null)
+        public string Username;
+        public string Token;
+        public User(string username, string token=null)
         {
             Username = username;
             Token = token;
-            ConnectionId = connectId;
         }
-        public string? ConnectionId { get; set; }
     }
 }

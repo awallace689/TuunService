@@ -50,7 +50,10 @@ namespace tuuncs
             services.AddSingleton(algoService);
             services.AddSingleton(new RoomService(algoService));
 
-            services.AddSignalR();
+            services.AddSignalR(options => {
+                options.EnableDetailedErrors = true;
+            })
+              .AddJsonProtocol();
             services.AddControllers();
         }
 
