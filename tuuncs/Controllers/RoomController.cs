@@ -14,6 +14,7 @@ namespace tuuncs.Controllers
     public class RoomController : Controller
     {
         private readonly RoomService _roomService;
+        private readonly AlgoService _algoService;
         private readonly MongoService _mongo;
 
         public RoomController(RoomService roomService, MongoService mongo) {
@@ -126,5 +127,28 @@ namespace tuuncs.Controllers
         {
             return Ok(_roomService.GenerateRoomCode());
         }
+
+        //[HttpGet]
+        //[Route("get/songs}")]
+        //public IActionResult GetSongs()
+        //{
+        //    var logDoc = new List<KeyValuePair<string, string>>();
+        //    List<User> users = new List<User>();
+        //    users.Add(new User("asdff01", null));
+        //    users.Add(new User("1264437724", null));
+
+        //    Options options = new Options { Genres = { "hip-hop" } };
+        //    try
+        //    {
+        //        JsonConvert.SerializeObject(_algo.GenerateTrackList(users, options));
+        //    }
+        //    catch (Exception)
+        //    {
+        //        logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+        //        return StatusCode(400, "");
+        //    }
+        //    return Ok();
+
+        //}
     }
 }
