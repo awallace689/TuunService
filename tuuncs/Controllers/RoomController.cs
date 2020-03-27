@@ -17,10 +17,11 @@ namespace tuuncs.Controllers
         private readonly AlgoService _algoService;
         private readonly MongoService _mongo;
 
-        public RoomController(RoomService roomService, MongoService mongo)
+        public RoomController(RoomService roomService, MongoService mongo, AlgoService algoService)
         {
             _roomService = roomService;
             _mongo = mongo;
+            _algoService = algoService;
         }
 
         // Gets host username from request url, creates options object from
@@ -140,14 +141,14 @@ namespace tuuncs.Controllers
             Options options = new Options { Genres = new List<string> { "hip-hop" } };
             try
             {
-                JsonConvert.SerializeObject(_algoService.GenerateTrackList(users, options));
+                _ = _algoService.GenerateTrackList(users, options);
             }
             catch (Exception)
             {
                 logDoc.Add(new KeyValuePair<string, string>("success", "false"));
                 return StatusCode(400, "");
             }
-            return Ok(_algoService.GenerateTrackList(users, options));
+            return Ok();
 
         }
     }

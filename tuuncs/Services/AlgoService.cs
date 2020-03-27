@@ -51,6 +51,7 @@ namespace tuuncs.Services
             HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
             HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
             List<SimpleTrack> subsetSimple = new List<SimpleTrack>();
+            List<SimpleTrack> mixTracks = new List<SimpleTrack>();
             int i = 0;
             if (fullSet.Count() > 9)
             {
@@ -70,15 +71,19 @@ namespace tuuncs.Services
                     }
                 }
                 subsetSimple = convertHashSetToList(subset);
+                List<SimpleTrack> tracks = new List<SimpleTrack>();
+                tracks.AddRange(recommendedTracks.GetRange(0, 3));
+                mixTracks = tracks.Union(subsetSimple).ToList();
             }
             else
             {
                 subsetSimple = convertHashSetToList(fullSet);
+                List<SimpleTrack> tracks = new List<SimpleTrack>();
+                mixTracks = tracks.Union(subsetSimple).ToList();
+                mixTracks = mixTracks.Union(recommendedTracks).ToList();
             }
 
-            List<SimpleTrack> tracks = new List<SimpleTrack>();
-            tracks.AddRange(recommendedTracks.GetRange(0, 3));
-            List<SimpleTrack> mixTracks = tracks.Union(subsetSimple).ToList();
+            
             return (mixTracks, avgFeatures);
         }
 
