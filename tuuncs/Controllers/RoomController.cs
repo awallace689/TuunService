@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using tuuncs.Services;
 using tuuncs.Models;
 using Newtonsoft.Json;
-using SpotifyAPI.Web.Models;
 
 
 namespace tuuncs.Controllers
@@ -15,13 +14,13 @@ namespace tuuncs.Controllers
     public class RoomController : Controller
     {
         private readonly RoomService _roomService;
+        private readonly AlgoService _algoService;
         private readonly MongoService _mongo;
-        private readonly AlgoService _algo;
 
-        public RoomController(RoomService roomService, MongoService mongo, AlgoService algo) {
+        public RoomController(RoomService roomService, MongoService mongo)
+        {
             _roomService = roomService;
             _mongo = mongo;
-            _algo = algo;
         }
 
         // Gets host username from request url, creates options object from
@@ -91,42 +90,65 @@ namespace tuuncs.Controllers
             }
         }
 
-        // [HttpPost]
-        // [Route("user/add/{roomId}")]
-        // public IActionResult AddUser(int roomId, [FromBody] User user)
-        // {
-        //     if (user == null)
-        //     {
-        //         return StatusCode(400, "Invalid JSON provided in request body.");
-        //     }
+        //[HttpPost]
+        //[Route("user/add/{roomId}")]
+        //public IActionResult AddUser(int roomId, [FromBody] User user)
+        //{
+        //    if (user == null)
+        //    {
+        //        return StatusCode(400, "Invalid JSON provided in request body.");
+        //    }
 
-        //     var logDoc = new List<KeyValuePair<string, string>>()
-        //     {
-        //         new KeyValuePair<string, string>("id", roomId.ToString()),
-        //         new KeyValuePair<string, string>("user", user.Username)
-        //     };
+        //    var logDoc = new List<KeyValuePair<string, string>>()
+        //    {
+        //        new KeyValuePair<string, string>("id", roomId.ToString()),
+        //        new KeyValuePair<string, string>("user", user.Username)
+        //    };
 
-        //     try
-        //     {
-        //         _roomService.AddUser(roomId, user);
-        //     }
-        //     catch (Exception)
-        //     {
-        //         logDoc.Add(new KeyValuePair<string, string>("success", "false"));
-        //         _mongo.Log(logDoc, "AddUser", "RoomsLog");
-        //         return StatusCode(400, "");
-        //     }
+        //    try
+        //    {
+        //        _roomService.AddUser(roomId, user);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+        //        _mongo.Log(logDoc, "GetRoom", "RoomsLog");
+        //        return StatusCode(400, "");
+        //    }
 
-        //     logDoc.Add(new KeyValuePair<string, string>("success", "true"));
-        //     _mongo.Log(logDoc, "AddUser", "RoomsLog");
-        //     return Ok();
-        // }
+        //    logDoc.Add(new KeyValuePair<string, string>("success", "true"));
+        //    _mongo.Log(logDoc, "GetRoom", "RoomsLog");
+        //    return Ok();
+        //}
 
         [HttpGet]
         [Route("genCode")]
         public IActionResult GenerateCode()
         {
             return Ok(_roomService.GenerateRoomCode());
+        }
+
+        [HttpGet]
+        [Route("get/songs")]
+        public IActionResult GetSongs()
+        {
+            var logDoc = new List<KeyValuePair<string, string>>();
+            List<User> users = new List<User>();
+            users.Add(new User("asdff01", null));
+            users.Add(new User("1264437724", null));
+
+            Options options = new Options { Genres = new List<string> { "hip-hop" } };
+            try
+            {
+                JsonConvert.SerializeObject(_algoService.GenerateTrackList(users, options));
+            }
+            catch (Exception)
+            {
+                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
+                return StatusCode(400, "");
+            }
+            return Ok(_algoService.GenerateTrackList(users, options));
+
         }
     }
 }
