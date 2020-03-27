@@ -34,15 +34,94 @@ namespace tuuncs.Services
             HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
             HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
-            IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
-            
-            TuneableTrack averageTrack = GetAverageTrack(songCollection);
+            TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
+            TuneableTrack sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
+
+            TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
+
+            //IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
+
+            //TuneableTrack averageTrack = GetAverageTrack(songCollection);
 
             List<string> artistSeed = GetArtistSeed(sharedTracks);
             List<string> trackSeed = GetTrackSeed(sharedTracks);
 
-            List<SimpleTrack> tracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, averageTrack);
-            return (tracks, averageTrack);
+            List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, avgFeatures);
+
+            HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
+            HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
+            List<SimpleTrack> subsetSimple = new List<SimpleTrack>();
+            int i = 0;
+            if (fullSet.Count() > 9)
+            {
+                foreach (FullTrack track in fullSet)
+                {
+                    if (i == 7)
+                    { break; }
+                    else
+                    {
+                        Random random = new Random();
+                        int rand = random.Next(0, 20);
+                        if (rand > 11)
+                        {
+                            subset.Add(track);
+                        }
+                        i++;
+                    }
+                }
+                subsetSimple = convertHashSetToList(subset);
+            }
+            else
+            {
+                subsetSimple = convertHashSetToList(fullSet);
+            }
+
+            List<SimpleTrack> tracks = new List<SimpleTrack>();
+            tracks.AddRange(recommendedTracks.GetRange(0, 3));
+            List<SimpleTrack> mixTracks = tracks.Union(subsetSimple).ToList();
+            return (mixTracks, avgFeatures);
+        }
+
+        public TuneableTrack getAverageFeatureValues(TuneableTrack individual, TuneableTrack shared)
+        {
+            TuneableTrack averageTrackFeatrues = new TuneableTrack
+            {
+                Acousticness = (individual.Acousticness + shared.Acousticness) / 2,
+                Danceability = (individual.Danceability + shared.Danceability) / 2,
+                Energy = (individual.Energy + shared.Energy) / 2,
+                Instrumentalness = (individual.Instrumentalness + shared.Instrumentalness) / 2,
+                Tempo = (individual.Tempo + shared.Tempo) / 2,
+                Valence = (individual.Valence + shared.Valence) / 2
+            };
+
+
+            return averageTrackFeatrues;
+        }
+
+        public List<SimpleTrack> convertHashSetToList(HashSet<FullTrack> fullTracks)
+        {
+            List<SimpleTrack> tracks = new List<SimpleTrack>();
+            foreach (FullTrack fullTrack in fullTracks)
+            {
+                tracks.Add(new SimpleTrack
+                {
+                    Artists = fullTrack.Artists,
+                    AvailableMarkets = fullTrack.AvailableMarkets,
+                    DiscNumber = fullTrack.DiscNumber,
+                    DurationMs = fullTrack.DurationMs,
+                    Explicit = fullTrack.Explicit,
+                    ExternUrls = fullTrack.ExternUrls,
+                    Href = fullTrack.Href,
+                    Id = fullTrack.Id,
+                    Name = fullTrack.Name,
+                    PreviewUrl = fullTrack.PreviewUrl,
+                    Restrictions = fullTrack.Restrictions,
+                    TrackNumber = fullTrack.TrackNumber,
+                    Type = fullTrack.Type,
+                    Uri = fullTrack.Uri
+                });
+            }
+            return tracks;
         }
 
         public async Task<HashSet<AudioFeatures>> GetAudioFeatures(IEnumerable<FullTrack> tracks)

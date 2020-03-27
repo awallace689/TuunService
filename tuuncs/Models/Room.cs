@@ -2,29 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotifyAPI.Web.Models;
 
 namespace tuuncs.Models
 {
     public class Room
     {
         public int Id { get; set; }
-        public HashSet<User> Users { get; set; }
+        public Dictionary<string, User> Users { get; set; }
         public Options Options { get; set; }
         public Profile Profile { get; set; }
         // Username of room host
         public string Host { get; set; }
         public DateTime Timestamp { get; set; }
-        public List<FullTrack> Playlist { get; set; }
         public Room(int id, Options options, string host)
         {
             Id = id;
-            Users = new HashSet<User>(new UserComparer());
+            Users = new Dictionary<string, User>();
             Options = options;
             Profile = new Profile();
             Host = host;
             Timestamp = DateTime.Now;
-            Playlist = null;
         }
     }
 
@@ -33,7 +30,9 @@ namespace tuuncs.Models
      */
     public class Options
     {
-        public List<string> Genres { get; set; }
+        public string Genre { get; set; }
+        public double Popularity { get; set; }
+        // Add additional customizations (for use w/ model)
     }
 
     /*

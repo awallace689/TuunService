@@ -9,7 +9,6 @@ using SpotifyAPI.Web.Models;
 using Secrets;
 using Newtonsoft.Json;
 using tuuncs.Services;
-using System.Net.Http;
 
 namespace tuuncs.Services
 {
@@ -28,60 +27,6 @@ namespace tuuncs.Services
                 AccessToken = token.AccessToken,
                 TokenType = token.TokenType
             };
-        }
-
-        public async Task<List<FullTrack>> GetRecentlyPlayed(string token)
-        {
-            using var httpClient = new HttpClient();
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/me/top/tracks?limit=50");
-            requestMessage.Headers.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            requestMessage.Headers.Accept
-                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage resp = await httpClient.SendAsync(requestMessage);
-            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                string jsonContent = await resp.Content.ReadAsStringAsync();
-                dynamic json = JsonConvert.DeserializeObject(jsonContent);
-                List<FullTrack> tracks = JsonConvert.DeserializeObject<List<FullTrack>>(JsonConvert.SerializeObject(json.items));
-                return tracks;
-            }
-            else
-            {
-                return new List<FullTrack>();
-            }
-        }
-
-        public async Task<List<AudioFeatures>> GetSeveralAudioFeatures(List<string> ids) {
-            if (ids.Count > 100) {
-                throw new Exception("Id limit 100 exceeded.");
-            }
-
-            string idsString = "";
-            foreach (string id in ids) {
-                string str = id == ids.Last() ? id : id + ",";
-                idsString += str;
-            }
-            using var httpClient = new HttpClient();
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/audio-features/?ids=" + idsString);
-            requestMessage.Headers.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", client.AccessToken);
-            requestMessage.Headers.Accept
-                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpResponseMessage resp = await httpClient.SendAsync(requestMessage);
-            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                string jsonContent = await resp.Content.ReadAsStringAsync();
-                dynamic json = JsonConvert.DeserializeObject(jsonContent);
-                List<AudioFeatures> analysisObjects = JsonConvert.DeserializeObject<List<AudioFeatures>>(JsonConvert.SerializeObject(json.audio_features));
-                return analysisObjects;
-            }
-            else
-            {
-                throw new Exception("Token error.");
-            }
         }
 
         public async Task<FullTrack> GetTrack(string id)
@@ -151,12 +96,6 @@ namespace tuuncs.Services
             Paging<SimplePlaylist> playlists = client.GetUserPlaylists(uid);
 
             return playlists.Items;
-        }
-
-        public async Task<List<SimpleTrack>> GetRecommendedSongs(List<string> artistSeed, List<string> genreSeed, List<string> trackSeed, TuneableTrack averageSong)
-        {
-            Recommendations recommendations = await client.GetRecommendationsAsync(artistSeed, genreSeed, trackSeed, limit: 50,target: averageSong);
-            return recommendations.Tracks;
         }
     }
 }
