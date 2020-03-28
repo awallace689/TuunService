@@ -14,7 +14,7 @@ namespace tuuncs.Hubs
         private readonly RoomService _roomService;
         public RoomsHub(RoomService roomService) : base()
         {
-          _roomService = roomService;
+            _roomService = roomService;
         }
 
         //
@@ -22,12 +22,46 @@ namespace tuuncs.Hubs
         //     Called when a new connection is established with the hub.
         public async Task AddUser(int roomId, string username, string token)
         {
-          var user = new User(username, token);
-          await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
-          _roomService.AddUser(roomId, user, Context.ConnectionId);
+            var user = new User(username, token);
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
+            _roomService.AddUser(roomId, user, Tuple.Create(Context.UserIdentifier, Context.ConnectionId));
 
-          Room room = _roomService.GetOne(roomId);
-          await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+            Room room = _roomService.GetOne(roomId);
+            await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+        }
+
+        public async Task LeaveRoom(int roomId, string username) 
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId.ToString());
+            _roomService.RemoveUser(username, roomId);
+            
+            if (_roomService.RoomsTable.ContainsKey(roomId))
+            {
+                Room room = _roomService.GetOne(roomId);
+                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+            }
+        }
+
+        public async Task Promote(int roomId, string username) 
+        {
+            _roomService.SetHost(roomId, username);
+
+            Room room = _roomService.GetOne(roomId);
+            await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+        }
+
+        public async Task Kick(int roomId, string username)
+        {
+            var user = new User(username);
+            await Clients.User(_roomService.UsersTable[user].Item1).SendAsync("GetKicked");
+            await Groups.RemoveFromGroupAsync(_roomService.UsersTable[user].Item2, roomId.ToString());
+            _roomService.RemoveUser(username, roomId);
+            
+            if (_roomService.RoomsTable.ContainsKey(roomId))
+            {
+                Room room = _roomService.GetOne(roomId);
+                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+            }
         }
     }
 }

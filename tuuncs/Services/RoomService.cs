@@ -10,35 +10,58 @@ namespace tuuncs.Services
     {
         private Random _random { get; set; }
         private readonly AlgoService _algo;
-        private Dictionary<int, Room> RoomsTable { get; set; }
-        private Dictionary<User, string> UsersTable { get; set; }
+        public Dictionary<int, Room> RoomsTable { get; set; }
+        public Dictionary<User, Tuple<string, string>> UsersTable { get; set; }
 
         public RoomService(AlgoService algo)
         {
             _random = new Random();
             RoomsTable = new Dictionary<int, Room>();
-            UsersTable = new Dictionary<User, string>(new UserComparer());
+            UsersTable = new Dictionary<User, Tuple<string, string>>(new UserComparer());
             _algo = algo;
         }
 
-        public void AddUser(int roomId, User user, string connectId) 
+        public void AddUser(int roomId, User user, Tuple<string, string> infoTuple) 
         {
-            UpsertUser(user, connectId);
+            UpsertUser(user, infoTuple);
             RoomsTable[roomId].Users.Add(user);
         }
         
 
-        public void UpsertUser(User user, string connectId) 
+        public void UpsertUser(User user, Tuple<string, string> infoTuple) 
         {
             if (!UsersTable.ContainsKey(user)) 
             {
-                UsersTable.Add(user, connectId);
+                UsersTable.Add(user, infoTuple);
             }
             else 
             {
-                UsersTable[user] = connectId;
+                UsersTable[user] = infoTuple;
                 UpdateUserToken(user);
             }
+        }
+
+        public void RemoveUser(string username, int roomId) 
+        {
+            var user = new User(username);
+            if (RoomsTable[roomId].Host != username)
+            {
+                RoomsTable[roomId].Users.Remove(user);
+            }
+            else
+            {
+                if (RoomsTable[roomId].Users.Count > 1)
+                {
+                    RoomsTable[roomId].Users.Remove(user);
+                    SetHost(roomId, RoomsTable[roomId].Users.First().Username);
+                }
+                else
+                {
+                    DeleteRoom(roomId);
+                }
+            }
+            
+            UsersTable.Remove(user);
         }
 
         public void UpdateUserToken(User user) 

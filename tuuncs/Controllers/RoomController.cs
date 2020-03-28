@@ -135,7 +135,7 @@ namespace tuuncs.Controllers
             var logDoc = new List<KeyValuePair<string, string>>();
             List<User> users = new List<User>();
             users.Add(new User("asdff01", null));
-            users.Add(new User("1264437724", null));
+            // users.Add(new User("1264437724", null));
 
             Options options = new Options { Genres = new List<string> { "hip-hop" } };
             try
