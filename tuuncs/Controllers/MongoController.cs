@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,6 +66,42 @@ namespace tuuncs.Controllers
             {
                 _mongo.WriteDocument("WriteTest", document);
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("playlists/{userID}")]
+        public IActionResult getPlaylists(string userID)
+        {
+            string res = _mongo.GetPlaylists(userID);
+            if (res != null)
+            {
+                return Ok(res);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Action returned null.");
+            }
+        }
+
+        [HttpPost]
+        [Route("playlists/{userID}/save")]
+        public IActionResult SavePlaylist(string userID, [FromQuery]string songIDs)
+        {
+            System.Diagnostics.Debug.WriteLine(songIDs);
+            List<string> songIDsList = songIDs.Split(",").ToList();
+            foreach(string str in songIDsList)
+            {
+                System.Diagnostics.Debug.WriteLine(str);
+            }
+            try
+            {
+                _mongo.SavePlaylist(userID, songIDsList);
+                return Ok(songIDs);
             }
             catch (Exception ex)
             {

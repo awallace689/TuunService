@@ -62,6 +62,32 @@ namespace tuuncs.Services
             return res["playlists"][0]?.ToJson();
         }
 
+        public string GetPlaylists(string userID)
+        {
+            _collection = _database.GetCollection<BsonDocument>("Playlists");
+            var filter = Builders<BsonDocument>.Filter.Eq("username", userID);
+            var res = _collection.Find(filter).ToList();
+
+            return res?.ToJson();
+        }
+
+        public void SavePlaylist(string userID, List<string> songIDs)
+        {
+            List<KeyValuePair<string, string>> playlist = new List<KeyValuePair<string, string>>();
+            for(int i = 0; i < songIDs.Count; i++)
+            {
+                playlist.Add(new KeyValuePair<string, string>(i.ToString(), songIDs[i]));
+            }
+            BsonDocument doc = new BsonDocument
+            {
+                {"username", userID},
+                {"dateTime", DateTime.Now},
+                {"playlist", new BsonDocument(new Dictionary<string, string>(playlist))}
+            };
+
+            WriteDocument("Playlists", doc);
+        }
+
         public void WriteDocument(string collection, BsonDocument doc)
         {
             _collection = _database.GetCollection<BsonDocument>(collection);
