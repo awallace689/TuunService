@@ -9,16 +9,14 @@ namespace tuuncs.Services
     public class RoomService
     {
         private Random _random { get; set; }
-        private readonly AlgoService _algo;
         public Dictionary<int, Room> RoomsTable { get; set; }
         public Dictionary<User, Tuple<string, string>> UsersTable { get; set; }
 
-        public RoomService(AlgoService algo)
+        public RoomService()
         {
             _random = new Random();
             RoomsTable = new Dictionary<int, Room>();
             UsersTable = new Dictionary<User, Tuple<string, string>>(new UserComparer());
-            _algo = algo;
         }
 
         public void AddUser(int roomId, User user, Tuple<string, string> infoTuple) 
