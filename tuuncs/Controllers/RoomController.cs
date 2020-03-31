@@ -67,30 +67,6 @@ namespace tuuncs.Controllers
             return Ok(JsonConvert.SerializeObject(_roomService.GetAll().ToList()));
         }
 
-        [HttpGet]
-        [Route("get/{roomId}")]
-        public IActionResult GetRoom(int roomId)
-        {
-            var logDoc = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("id", roomId.ToString()),
-            };
-
-            try
-            {
-                var result = JsonConvert.SerializeObject(_roomService.GetOne(roomId));
-                logDoc.Add(new KeyValuePair<string, string>("success", "true"));
-                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                logDoc.Add(new KeyValuePair<string, string>("success", "false"));
-                _mongo.Log(logDoc, "GetRoom", "RoomsLog");
-                return StatusCode(400, ex);
-            }
-        }
-
         //[HttpPost]
         //[Route("user/add/{roomId}")]
         //public IActionResult AddUser(int roomId, [FromBody] User user)
