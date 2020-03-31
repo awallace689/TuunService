@@ -69,7 +69,9 @@ namespace tuuncs.Hubs
         public async Task Generate(int roomId) 
         {
             var room = _roomService.GetOne(roomId);
-            room.Playlist = (await _algoService.GenerateTrackList(room.Users.ToList(), room.Options)).Item1;
+            var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
+            room.Playlist = algoTuple.Item1;
+            room.Profile = algoTuple.Item2;
 
             await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
         }
