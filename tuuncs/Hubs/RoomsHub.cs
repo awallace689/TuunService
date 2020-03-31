@@ -12,9 +12,11 @@ namespace tuuncs.Hubs
     public class RoomsHub : Hub
     {
         private readonly RoomService _roomService;
-        public RoomsHub(RoomService roomService) : base()
+        private readonly AlgoService _algoService;
+        public RoomsHub(RoomService roomService, AlgoService algoService) : base()
         {
             _roomService = roomService;
+            _algoService = algoService;
         }
 
         //
@@ -62,6 +64,14 @@ namespace tuuncs.Hubs
                 Room room = _roomService.GetOne(roomId);
                 await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
             }
+        }
+
+        public async Task Generate(int roomId) 
+        {
+            var room = _roomService.GetOne(roomId);
+            room.Playlist = (await _algoService.GenerateTrackList(room.Users.ToList(), room.Options)).Item1;
+
+            await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
         }
     }
 }

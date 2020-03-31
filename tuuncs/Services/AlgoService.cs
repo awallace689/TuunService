@@ -19,7 +19,7 @@ namespace tuuncs.Services
             _spotify = spotify;
         }
 
-        public async Task<(List<SimpleTrack>, TuneableTrack)> GenerateTrackList(List<User> users, Options options)
+        public async Task<(Dictionary<string, List<string>>, TuneableTrack)> GenerateTrackList(List<User> users, Options options)
         {
 
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
@@ -48,43 +48,59 @@ namespace tuuncs.Services
 
             List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, avgFeatures);
 
-            HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
-            HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
-            List<SimpleTrack> subsetSimple = new List<SimpleTrack>();
-            List<SimpleTrack> mixTracks = new List<SimpleTrack>();
-            int i = 0;
-            if (fullSet.Count() > 9)
-            {
-                foreach (FullTrack track in fullSet)
-                {
-                    if (i == 7)
-                    { break; }
-                    else
-                    {
-                        Random random = new Random();
-                        int rand = random.Next(0, 20);
-                        if (rand > 11)
-                        {
-                            subset.Add(track);
-                        }
-                        i++;
-                    }
-                }
-                subsetSimple = convertHashSetToList(subset);
-                List<SimpleTrack> tracks = new List<SimpleTrack>();
-                tracks.AddRange(recommendedTracks.GetRange(0, 3));
-                mixTracks = tracks.Union(subsetSimple).ToList();
-            }
-            else
-            {
-                subsetSimple = convertHashSetToList(fullSet);
-                List<SimpleTrack> tracks = new List<SimpleTrack>();
-                mixTracks = tracks.Union(subsetSimple).ToList();
-                mixTracks = mixTracks.Union(recommendedTracks).ToList();
-            }
+            // HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
+            // HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
+            // List<SimpleTrack> subsetSimple = new List<SimpleTrack>();
+            // List<SimpleTrack> mixTracks = new List<SimpleTrack>();
+            // int i = 0;
+            // if (fullSet.Count() > 9)
+            // {
+            //     foreach (FullTrack track in fullSet)
+            //     {
+            //         if (i == 7)
+            //         { break; }
+            //         else
+            //         {
+            //             Random random = new Random();
+            //             int rand = random.Next(0, 20);
+            //             if (rand > 11)
+            //             {
+            //                 subset.Add(track);
+            //             }
+            //             i++;
+            //         }
+            //     }
+            //     subsetSimple = convertHashSetToList(subset);
+            //     List<SimpleTrack> tracks = new List<SimpleTrack>();
+            //     tracks.AddRange(recommendedTracks.GetRange(0, 3));
+            //     mixTracks = tracks.Union(subsetSimple).ToList();
+            // }
+            // else
+            // {
+            //     subsetSimple = convertHashSetToList(fullSet);
+            //     List<SimpleTrack> tracks = new List<SimpleTrack>();
+            //     mixTracks = tracks.Union(subsetSimple).ToList();
+            //     mixTracks = mixTracks.Union(recommendedTracks).ToList();
+            // }
 
             
-            return (mixTracks, avgFeatures);
+            // return (mixTracks, avgFeatures);
+            var playlist = new Dictionary<string, List<string>>();
+            var shared = new List<string>();
+            var rest = new List<string>();
+
+            foreach (FullTrack track in sharedTracks) 
+            {
+                shared.Add(track.Id);
+            }
+            foreach (SimpleTrack track in recommendedTracks)
+            {
+                rest.Add(track.Id);
+            }
+            playlist.Add("shared", shared);
+            playlist.Add("rest", rest);
+
+            return (playlist, avgFeatures);
         }
 
         public TuneableTrack getAverageFeatureValues(TuneableTrack individual, TuneableTrack shared)

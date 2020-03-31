@@ -110,10 +110,11 @@ namespace tuuncs.Controllers
             
             var trackList = await _algo.GenerateTrackList(users, options);
 
-            var res = new List<string>();
-            foreach (SimpleTrack track in trackList.Item1) {
-                res.Add(track.Name + ", " + track.Artists[0].Name);
-            }
+            List<string> res = trackList.Item1["shared"].Concat(trackList.Item1["rest"]).ToList();
+
+            // foreach (string track in res) {
+            //     // res.Add(track.Name + ", " + track.Artists[0].Name);
+            // }
             
             return Ok(res);
         }

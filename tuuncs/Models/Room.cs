@@ -15,7 +15,7 @@ namespace tuuncs.Models
         // Username of room host
         public string Host { get; set; }
         public DateTime Timestamp { get; set; }
-        public List<FullTrack> Playlist { get; set; }
+        public Dictionary<string, List<string>> Playlist { get; set; }
         public Room(int id, Options options, string host)
         {
             Id = id;
@@ -24,7 +24,9 @@ namespace tuuncs.Models
             Profile = new Profile();
             Host = host;
             Timestamp = DateTime.Now;
-            Playlist = null;
+            Playlist = new Dictionary<string, List<string>>();
+            Playlist.Add("shared", new List<string>());
+            Playlist.Add("rest", new List<string>());
         }
     }
 
