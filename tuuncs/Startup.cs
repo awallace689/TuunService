@@ -48,7 +48,7 @@ namespace tuuncs
             services.AddSingleton(new MongoService());
             AlgoService algoService = new AlgoService(spotifyService);
             services.AddSingleton(algoService);
-            services.AddSingleton(new RoomService(algoService));
+            services.AddSingleton(new RoomService());
 
             services.AddSignalR(options => {
                 options.EnableDetailedErrors = true;
