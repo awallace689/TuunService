@@ -11,7 +11,7 @@ namespace tuuncs.Models
         public int Id { get; set; }
         public HashSet<User> Users { get; set; }
         public Options Options { get; set; }
-        public Profile Profile { get; set; }
+        public TuneableTrack Profile { get; set; }
         // Username of room host
         public string Host { get; set; }
         public DateTime Timestamp { get; set; }
@@ -21,7 +21,7 @@ namespace tuuncs.Models
             Id = id;
             Users = new HashSet<User>(new UserComparer());
             Options = options;
-            Profile = new Profile();
+            Profile = null;
             Host = host;
             Timestamp = DateTime.Now;
             Playlist = new Dictionary<string, List<string>>();
@@ -36,13 +36,5 @@ namespace tuuncs.Models
     public class Options
     {
         public List<string> Genres { get; set; }
-    }
-
-    /*
-     * Object stores ideal song analysis result from algorithm
-     */
-    public class Profile
-    {
-        // Add Song analysis fields here, corresponding to SongAnalysis object fields from Spotify library
     }
 }
