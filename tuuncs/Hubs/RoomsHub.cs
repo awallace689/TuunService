@@ -70,8 +70,9 @@ namespace tuuncs.Hubs
         {
             var room = _roomService.GetOne(roomId);
             room.Playlist = (await _algoService.GenerateTrackList(room.Users.ToList(), room.Options)).Item1;
-
+            
             await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+            await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
         }
     }
 }

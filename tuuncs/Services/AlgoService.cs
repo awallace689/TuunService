@@ -27,6 +27,7 @@ namespace tuuncs.Services
             Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
             AddPlayed(users, trackPool, contributors);
+            Console.WriteLine(contributors);
             AddPlaylists(users, trackPool, contributors);
             FilterByGenre(ref trackPool, options);
             PopulateSharedTracks(trackPool, sharedTracks, contributors);
@@ -35,18 +36,28 @@ namespace tuuncs.Services
             HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
             TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
-            TuneableTrack sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
+            TuneableTrack sharedTracksAvg;
+            if (sharedTracks.Count > 0)
+            {
+               sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
+            }
+            else
+            {
+                sharedTracksAvg = trackPoolAvg;
+            }
+             
 
             TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
 
             //IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
 
             //TuneableTrack averageTrack = GetAverageTrack(songCollection);
+            var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
+            List<string> trackSeed = GetTrackSeed(seedList);
+            List<string> artistSeed = GetArtistSeed(seedList);
 
-            List<string> artistSeed = GetArtistSeed(sharedTracks);
-            List<string> trackSeed = GetTrackSeed(sharedTracks);
-
-            List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, options.Genres, trackSeed, avgFeatures);
+            //List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(new List<string>(), options.Genres, trackSeed, avgFeatures);
+            List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
 
             // HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
             // HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
@@ -83,7 +94,7 @@ namespace tuuncs.Services
             //     mixTracks = mixTracks.Union(recommendedTracks).ToList();
             // }
 
-            
+
             // return (mixTracks, avgFeatures);
             var playlist = new Dictionary<string, List<string>>();
             var shared = new List<string>();
@@ -103,9 +114,19 @@ namespace tuuncs.Services
             return (playlist, avgFeatures);
         }
 
+        public List<string> FixGenres(List<string> genresIn)
+        {
+            List<string> genresOut = new List<string>();
+            foreach(string genreIn in genresIn)
+            {
+                genresOut.Add(genreIn.Replace('-', ' '));
+            }
+            return genresOut;
+        }
+
         public TuneableTrack getAverageFeatureValues(TuneableTrack individual, TuneableTrack shared)
         {
-            TuneableTrack averageTrackFeatrues = new TuneableTrack
+            TuneableTrack averageTrackFeatures = new TuneableTrack
             {
                 Acousticness = (individual.Acousticness + shared.Acousticness) / 2,
                 Danceability = (individual.Danceability + shared.Danceability) / 2,
@@ -116,7 +137,7 @@ namespace tuuncs.Services
             };
 
 
-            return averageTrackFeatrues;
+            return averageTrackFeatures;
         }
 
         public List<SimpleTrack> convertHashSetToList(HashSet<FullTrack> fullTracks)
@@ -188,7 +209,8 @@ namespace tuuncs.Services
             {
                 if (user.Token != null)
                 {
-                    foreach (FullTrack track in GetRecentlyPlayed(user.Token))
+                    var recent = GetRecentlyPlayed(user.Token);
+                    foreach (FullTrack track in recent)
                     {
                         if (!trackPool.Add(track))
                         {
@@ -235,7 +257,7 @@ namespace tuuncs.Services
                         bool sharesGenre = false;
                         foreach (string genre in artist.Genres)
                         {
-                            if (options.Genres.Contains(genre))
+                            if (FixGenres(options.Genres).Contains(genre.Replace('-', ' ')))
                             {
                                 sharesGenre = true;
                                 break;
