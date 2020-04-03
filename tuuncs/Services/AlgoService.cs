@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using SpotifyAPI.Web.Models;
 using tuuncs.Models;
 using System.Collections;
-using System.Linq;
 
 namespace tuuncs.Services
 {
@@ -29,7 +28,7 @@ namespace tuuncs.Services
             AddPlayed(users, trackPool, contributors);
             Console.WriteLine(contributors);
             AddPlaylists(users, trackPool, contributors);
-            FilterByGenre(ref trackPool, options);
+            var artistDict = FilterByGenre(ref trackPool, options);
             PopulateSharedTracks(trackPool, sharedTracks, contributors);
 
             HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
@@ -46,17 +45,12 @@ namespace tuuncs.Services
                 sharedTracksAvg = trackPoolAvg;
             }
              
-
             TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
 
-            //IEnumerable<AudioFeatures> songCollection = sharedTracksFeatures.Union(trackPoolFeatures);
-
-            //TuneableTrack averageTrack = GetAverageTrack(songCollection);
             var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
             List<string> trackSeed = GetTrackSeed(seedList);
-            List<string> artistSeed = GetArtistSeed(seedList);
+            List<string> artistSeed = GetArtistSeed(artistDict);
 
-            //List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(new List<string>(), options.Genres, trackSeed, avgFeatures);
             List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
 
             // HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
@@ -94,8 +88,6 @@ namespace tuuncs.Services
             //     mixTracks = mixTracks.Union(recommendedTracks).ToList();
             // }
 
-
-            // return (mixTracks, avgFeatures);
             var playlist = new Dictionary<string, List<string>>();
             var shared = new List<string>();
             var rest = new List<string>();
@@ -225,7 +217,7 @@ namespace tuuncs.Services
             }
         }
 
-        public void FilterByGenre(ref HashSet<FullTrack> trackPool, Options options)
+        public Dictionary<string, HashSet<FullTrack>> FilterByGenre(ref HashSet<FullTrack> trackPool, Options options)
         {
             Dictionary<string, HashSet<FullTrack>> artistDict = new Dictionary<string, HashSet<FullTrack>>();
             foreach (FullTrack track in trackPool)
@@ -282,6 +274,8 @@ namespace tuuncs.Services
                     trackPool.Add(track);
                 }
             }
+
+            return artistDict;
         }
 
         public void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
@@ -358,20 +352,15 @@ namespace tuuncs.Services
             return songs;
         }
 
-        public List<string> GetArtistSeed(HashSet<FullTrack> sharedTracks)
+        public List<string> GetArtistSeed(Dictionary<string, HashSet<FullTrack>> artistDict)
         {
-            List<string> artistSeed = new List<string>();
-            int count = 0;
-            foreach (FullTrack track in sharedTracks)
-            {
-                artistSeed.Add(track.Artists[0].Id);
-                count++;
-                if (count == 5)
-                {
-                    break;
-                }
-            }
-            return artistSeed;
+            List<KeyValuePair<string, HashSet<FullTrack>>> kvList = artistDict.ToList();
+            kvList.Sort( (pair1, pair2) => {
+              return pair1.Value.Count.CompareTo(pair2.Value.Count);
+            });
+            kvList.Reverse();
+
+            return (from pair in kvList select pair.Key).Take(5).ToList();
         }
 
         public List<string> GetTrackSeed(HashSet<FullTrack> sharedTracks)
