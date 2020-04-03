@@ -64,9 +64,10 @@ namespace tuuncs.Services
 
         public string GetPlaylists(string userID)
         {
+            var projection = Builders<BsonDocument>.Projection.Exclude("_id").Exclude("dateTime").Exclude("username");
             _collection = _database.GetCollection<BsonDocument>("Playlists");
             var filter = Builders<BsonDocument>.Filter.Eq("username", userID);
-            var res = _collection.Find(filter).ToList();
+            var res = _collection.Find(filter).Project(projection).ToList();
 
             return res?.ToJson();
         }

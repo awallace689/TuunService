@@ -76,5 +76,10 @@ namespace tuuncs.Hubs
             await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
             await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
         }
+
+        public async Task SavePlaylist(int roomId)
+        {
+
+        }
     }
 }
