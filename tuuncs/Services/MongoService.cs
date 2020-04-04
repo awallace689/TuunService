@@ -72,18 +72,14 @@ namespace tuuncs.Services
             return res?.ToJson();
         }
 
-        public void SavePlaylist(string userID, List<string> songIDs)
+        public void SavePlaylist(string userID, string name, Dictionary<string, List<string>> songIDs)
         {
-            List<KeyValuePair<string, string>> playlist = new List<KeyValuePair<string, string>>();
-            for(int i = 0; i < songIDs.Count; i++)
-            {
-                playlist.Add(new KeyValuePair<string, string>(i.ToString(), songIDs[i]));
-            }
             BsonDocument doc = new BsonDocument
             {
                 {"username", userID},
+                {"name", name},
                 {"dateTime", DateTime.Now},
-                {"playlist", new BsonDocument(new Dictionary<string, string>(playlist))}
+                {"playlist", new BsonDocument(songIDs)}
             };
 
             WriteDocument("Playlists", doc);

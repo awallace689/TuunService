@@ -89,19 +89,13 @@ namespace tuuncs.Controllers
         }
 
         [HttpPost]
-        [Route("playlists/{userID}/save")]
-        public IActionResult SavePlaylist(string userID, [FromQuery]string songIDs)
+        [Route("playlists/{userID}/save/{name}")]
+        public IActionResult SavePlaylist(string userID, string name, [FromBody]Dictionary<string, List<string>> playlist)
         {
-            System.Diagnostics.Debug.WriteLine(songIDs);
-            List<string> songIDsList = songIDs.Split(",").ToList();
-            foreach(string str in songIDsList)
-            {
-                System.Diagnostics.Debug.WriteLine(str);
-            }
             try
             {
-                _mongo.SavePlaylist(userID, songIDsList);
-                return Ok(songIDs);
+                _mongo.SavePlaylist(userID, name, playlist);
+                return Ok();
             }
             catch (Exception ex)
             {
