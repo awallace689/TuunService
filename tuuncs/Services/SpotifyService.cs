@@ -146,9 +146,20 @@ namespace tuuncs.Services
             return trackList;
         }
 
-        public IEnumerable<SimplePlaylist> GetUserPlaylists(string uid)
+        public async Task<IEnumerable<SimplePlaylist>> GetUserPlaylists(string uid)
         {
             Paging<SimplePlaylist> playlists = client.GetUserPlaylists(uid);
+
+            if (playlists == null) 
+            {
+                await Initialize();
+                playlists = client.GetUserPlaylists(uid);
+
+                if (playlists == null)
+                {
+                    throw new Exception("Token invalid.");
+                }
+            }
 
             return playlists.Items;
         }

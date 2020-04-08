@@ -13,10 +13,12 @@ namespace tuuncs.Hubs
     {
         private readonly RoomService _roomService;
         private readonly AlgoService _algoService;
-        public RoomsHub(RoomService roomService, AlgoService algoService) : base()
+        private readonly SpotifyService _spotifyService;
+        public RoomsHub(RoomService roomService, AlgoService algoService, SpotifyService spotifyService) : base()
         {
             _roomService = roomService;
             _algoService = algoService;
+            _spotifyService = spotifyService;
         }
 
         //
@@ -69,17 +71,29 @@ namespace tuuncs.Hubs
         public async Task Generate(int roomId) 
         {
             var room = _roomService.GetOne(roomId);
-            var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
-            room.Playlist = algoTuple.Item1;
-            room.Profile = algoTuple.Item2;
+            try 
+            {
+                var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
+                room.Playlist = algoTuple.Item1;
+                room.Profile = algoTuple.Item2;
 
-            await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
-            await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
-        }
+                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+                await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
+            }
+            catch (NoDataException)
+            {
+                await Clients.Group(roomId.ToString()).SendAsync("GenerateFailed");
+            }
+            catch (TokenExpiredException)
+            {
+                await _spotifyService.Initialize();
+                var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
+                room.Playlist = algoTuple.Item1;
+                room.Profile = algoTuple.Item2;
 
-        public async Task SavePlaylist(int roomId)
-        {
-
+                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+                await Clients.Group(roomId.ToString()).SendAsync("StartPlayer"); 
+            }
         }
     }
 }

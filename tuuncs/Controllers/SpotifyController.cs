@@ -81,7 +81,7 @@ namespace tuuncs.Controllers
             {
                 IList<FullPlaylist> fullPlaylists = new List<FullPlaylist>();
 
-                IEnumerable<SimplePlaylist> simplePlaylists = _spotify.GetUserPlaylists(uid);
+                IEnumerable<SimplePlaylist> simplePlaylists = _spotify.GetUserPlaylists(uid).Result;
                 foreach (SimplePlaylist playlist in simplePlaylists)
                 {
                     fullPlaylists.Add(_spotify.client.GetPlaylist(playlist.Id));

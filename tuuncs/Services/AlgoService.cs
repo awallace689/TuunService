@@ -20,90 +20,65 @@ namespace tuuncs.Services
 
         public async Task<(Dictionary<string, List<string>>, TuneableTrack)> GenerateTrackList(List<User> users, Options options)
         {
-
+          try 
+          {
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
-            HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
-            Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
+              HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
+              Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
-            AddPlayed(users, trackPool, contributors);
-            Console.WriteLine(contributors);
-            AddPlaylists(users, trackPool, contributors);
-            var artistDict = FilterByGenre(ref trackPool, options);
-            PopulateSharedTracks(trackPool, sharedTracks, contributors);
+              AddPlayed(users, trackPool, contributors);
+              AddPlaylists(users, trackPool, contributors);
+              var artistDict = FilterByGenre(ref trackPool, options);
+              PopulateSharedTracks(trackPool, sharedTracks, contributors);
 
-            HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
-            HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
+              HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
+              HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
-            TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
-            TuneableTrack sharedTracksAvg;
-            if (sharedTracks.Count > 0)
-            {
-               sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
-            }
-            else
-            {
-                sharedTracksAvg = trackPoolAvg;
-            }
-             
-            TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
+              TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
+              TuneableTrack sharedTracksAvg;
+              if (sharedTracks.Count > 0)
+              {
+                sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
+              }
+              else
+              {
+                  sharedTracksAvg = trackPoolAvg;
+              }
+              
+              TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
 
-            var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
-            List<string> trackSeed = GetTrackSeed(seedList);
-            List<string> artistSeed = GetArtistSeed(artistDict);
+              var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
+              List<string> trackSeed = GetTrackSeed(seedList);
+              List<string> artistSeed = GetArtistSeed(artistDict);
 
-            List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
+              List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
 
-            // HashSet<FullTrack> fullSet = new HashSet<FullTrack>(trackPool.Union(sharedTracks).ToList(), new FullTrackComparer());
-            // HashSet<FullTrack> subset = new HashSet<FullTrack>(new FullTrackComparer());
-            // List<SimpleTrack> subsetSimple = new List<SimpleTrack>();
-            // List<SimpleTrack> mixTracks = new List<SimpleTrack>();
-            // int i = 0;
-            // if (fullSet.Count() > 9)
-            // {
-            //     foreach (FullTrack track in fullSet)
-            //     {
-            //         if (i == 7)
-            //         { break; }
-            //         else
-            //         {
-            //             Random random = new Random();
-            //             int rand = random.Next(0, 20);
-            //             if (rand > 11)
-            //             {
-            //                 subset.Add(track);
-            //             }
-            //             i++;
-            //         }
-            //     }
-            //     subsetSimple = convertHashSetToList(subset);
-            //     List<SimpleTrack> tracks = new List<SimpleTrack>();
-            //     tracks.AddRange(recommendedTracks.GetRange(0, 3));
-            //     mixTracks = tracks.Union(subsetSimple).ToList();
-            // }
-            // else
-            // {
-            //     subsetSimple = convertHashSetToList(fullSet);
-            //     List<SimpleTrack> tracks = new List<SimpleTrack>();
-            //     mixTracks = tracks.Union(subsetSimple).ToList();
-            //     mixTracks = mixTracks.Union(recommendedTracks).ToList();
-            // }
+              if (recommendedTracks == null) {
+                  throw new NoDataException();
+              }
 
-            var playlist = new Dictionary<string, List<string>>();
-            var shared = new List<string>();
-            var rest = new List<string>();
+              var playlist = new Dictionary<string, List<string>>();
+              var shared = new List<string>();
+              var rest = new List<string>();
 
-            foreach (FullTrack track in sharedTracks) 
-            {
-                shared.Add(track.Id);
-            }
-            foreach (SimpleTrack track in recommendedTracks)
-            {
-                rest.Add(track.Id);
-            }
-            playlist.Add("shared", shared);
-            playlist.Add("rest", rest);
+              foreach (FullTrack track in sharedTracks) 
+              {
+                  shared.Add(track.Id);
+              }
+              foreach (SimpleTrack track in recommendedTracks)
+              {
+                  rest.Add(track.Id);
+              }
+              playlist.Add("shared", shared);
+              playlist.Add("rest", rest);
 
-            return (playlist, avgFeatures);
+              return (playlist, avgFeatures);
+          }
+          catch (TokenExpiredException)
+          {
+              await _spotify.Initialize();
+              return GenerateTrackList(users, options).Result;
+          }
         }
 
         public List<string> FixGenres(List<string> genresIn)
@@ -127,7 +102,6 @@ namespace tuuncs.Services
                 Tempo = (individual.Tempo + shared.Tempo) / 2,
                 Valence = (individual.Valence + shared.Valence) / 2
             };
-
 
             return averageTrackFeatures;
         }
@@ -166,7 +140,7 @@ namespace tuuncs.Services
 
             foreach (FullTrack track in tracks)
             {
-                if (trackIds.Count <= 100)
+                if (trackIds.Count < 100)
                 {
                     trackIds.Add(track.Id);
                 }
@@ -278,25 +252,32 @@ namespace tuuncs.Services
             return artistDict;
         }
 
-        public void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
+        public async void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
         {
             foreach (User user in users)
             {
-                var playlists = _spotify.GetUserPlaylists(user.Username);
-                foreach (SimplePlaylist playlist in playlists)
+                try 
                 {
-                    FullPlaylist fullPlaylist = _spotify.client.GetPlaylist(playlist.Id);
-                    foreach (PlaylistTrack pTrack in fullPlaylist.Tracks.Items)
+                    var playlists = await _spotify.GetUserPlaylists(user.Username);
+                    foreach (SimplePlaylist playlist in playlists)
                     {
-                        if (!trackPool.Add(pTrack.Track))
+                        FullPlaylist fullPlaylist = _spotify.client.GetPlaylist(playlist.Id);
+                        foreach (PlaylistTrack pTrack in fullPlaylist.Tracks.Items)
                         {
-                            contributors[pTrack.Track].Add(user.Username);
-                        }
-                        else
-                        {
-                            contributors.Add(pTrack.Track, new HashSet<string>() { user.Username });
+                            if (!trackPool.Add(pTrack.Track))
+                            {
+                                contributors[pTrack.Track].Add(user.Username);
+                            }
+                            else
+                            {
+                                contributors.Add(pTrack.Track, new HashSet<string>() { user.Username });
+                            }
                         }
                     }
+                }
+                catch (NullReferenceException) 
+                {
+                    throw new TokenExpiredException();
                 }
             }
         }
@@ -379,4 +360,8 @@ namespace tuuncs.Services
             return trackSeed;
         }
     }
+
+    class NoDataException : Exception { }
+
+    class TokenExpiredException : Exception { }
 }
