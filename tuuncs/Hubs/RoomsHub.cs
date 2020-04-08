@@ -77,6 +77,18 @@ namespace tuuncs.Hubs
             await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
         }
 
+        public async Task LoadPlaylist(int roomId, List<string> playlist)
+        {
+            var room = _roomService.GetOne(roomId);
+            var playlistDict = new Dictionary<string, List<string>>();
+            playlistDict.Add("shared", playlist);
+            playlistDict.Add("rest", new List<string>());
+            room.Playlist = playlistDict;
+
+            await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+            await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
+        }
+
         public async Task SavePlaylist(int roomId)
         {
 
