@@ -70,7 +70,8 @@ namespace tuuncs.Hubs
 
         public async Task Generate(int roomId) 
         {
-            try {
+            try 
+            {
                 var room = _roomService.GetOne(roomId);
                 try 
                 {

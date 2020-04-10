@@ -25,7 +25,7 @@ namespace tuuncs.Services
             Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
             AddPlayed(users, trackPool, contributors);
-            AddPlaylists(users, trackPool, contributors);
+            await AddPlaylists(users, trackPool, contributors);
             var artistDict = FilterByGenre(ref trackPool, options);
             PopulateSharedTracks(trackPool, sharedTracks, contributors);
 
@@ -244,7 +244,7 @@ namespace tuuncs.Services
             return artistDict;
         }
 
-        public async void AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
+        public async Task AddPlaylists(List<User> users, HashSet<FullTrack> trackPool, Dictionary<FullTrack, HashSet<string>> contributors)
         {
             foreach (User user in users)
             {
