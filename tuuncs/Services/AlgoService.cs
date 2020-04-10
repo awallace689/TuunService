@@ -20,65 +20,57 @@ namespace tuuncs.Services
 
         public async Task<(Dictionary<string, List<string>>, TuneableTrack)> GenerateTrackList(List<User> users, Options options)
         {
-          try 
-          {
             HashSet<FullTrack> trackPool = new HashSet<FullTrack>(new FullTrackComparer());
-              HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
-              Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
+            HashSet<FullTrack> sharedTracks = new HashSet<FullTrack>(new FullTrackComparer());
+            Dictionary<FullTrack, HashSet<string>> contributors = new Dictionary<FullTrack, HashSet<string>>(new FullTrackComparer());
 
-              AddPlayed(users, trackPool, contributors);
-              AddPlaylists(users, trackPool, contributors);
-              var artistDict = FilterByGenre(ref trackPool, options);
-              PopulateSharedTracks(trackPool, sharedTracks, contributors);
+            AddPlayed(users, trackPool, contributors);
+            AddPlaylists(users, trackPool, contributors);
+            var artistDict = FilterByGenre(ref trackPool, options);
+            PopulateSharedTracks(trackPool, sharedTracks, contributors);
 
-              HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
-              HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
+            HashSet<AudioFeatures> trackPoolFeatures = await GetAudioFeatures(trackPool);
+            HashSet<AudioFeatures> sharedTracksFeatures = await GetAudioFeatures(sharedTracks);
 
-              TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
-              TuneableTrack sharedTracksAvg;
-              if (sharedTracks.Count > 0)
-              {
-                sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
-              }
-              else
-              {
-                  sharedTracksAvg = trackPoolAvg;
-              }
-              
-              TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
+            TuneableTrack trackPoolAvg = GetAverageTrack(trackPoolFeatures);
+            TuneableTrack sharedTracksAvg;
+            if (sharedTracks.Count > 0)
+            {
+              sharedTracksAvg = GetAverageTrack(sharedTracksFeatures);
+            }
+            else
+            {
+                sharedTracksAvg = trackPoolAvg;
+            }
+            
+            TuneableTrack avgFeatures = getAverageFeatureValues(trackPoolAvg, sharedTracksAvg);
 
-              var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
-              List<string> trackSeed = GetTrackSeed(seedList);
-              List<string> artistSeed = GetArtistSeed(artistDict);
+            var seedList = sharedTracks.Count > 0 ? sharedTracks : trackPool;
+            List<string> trackSeed = GetTrackSeed(seedList);
+            List<string> artistSeed = GetArtistSeed(artistDict);
 
-              List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
+            List<SimpleTrack> recommendedTracks = await GetRecommendedSongs(artistSeed, new List<string>(), new List<string>(), avgFeatures);
 
-              if (recommendedTracks == null) {
-                  throw new NoDataException();
-              }
+            if (recommendedTracks == null) {
+                throw new NoDataException();
+            }
 
-              var playlist = new Dictionary<string, List<string>>();
-              var shared = new List<string>();
-              var rest = new List<string>();
+            var playlist = new Dictionary<string, List<string>>();
+            var shared = new List<string>();
+            var rest = new List<string>();
 
-              foreach (FullTrack track in sharedTracks) 
-              {
-                  shared.Add(track.Id);
-              }
-              foreach (SimpleTrack track in recommendedTracks)
-              {
-                  rest.Add(track.Id);
-              }
-              playlist.Add("shared", shared);
-              playlist.Add("rest", rest);
+            foreach (FullTrack track in sharedTracks) 
+            {
+                shared.Add(track.Id);
+            }
+            foreach (SimpleTrack track in recommendedTracks)
+            {
+                rest.Add(track.Id);
+            }
+            playlist.Add("shared", shared);
+            playlist.Add("rest", rest);
 
-              return (playlist, avgFeatures);
-          }
-          catch (TokenExpiredException)
-          {
-              await _spotify.Initialize();
-              return GenerateTrackList(users, options).Result;
-          }
+            return (playlist, avgFeatures);
         }
 
         public List<string> FixGenres(List<string> genresIn)

@@ -70,30 +70,37 @@ namespace tuuncs.Hubs
 
         public async Task Generate(int roomId) 
         {
-            var room = _roomService.GetOne(roomId);
-            try 
-            {
-                var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
-                room.Playlist = algoTuple.Item1;
-                room.Profile = algoTuple.Item2;
+            try {
+                var room = _roomService.GetOne(roomId);
+                try 
+                {
+                    var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
+                    room.Playlist = algoTuple.Item1;
+                    room.Profile = algoTuple.Item2;
 
-                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
-                await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
-            }
-            catch (NoDataException)
-            {
-                await Clients.Group(roomId.ToString()).SendAsync("GenerateFailed");
-            }
-            catch (TokenExpiredException)
-            {
-                await _spotifyService.Initialize();
-                var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
-                room.Playlist = algoTuple.Item1;
-                room.Profile = algoTuple.Item2;
+                    await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+                    await Clients.Group(roomId.ToString()).SendAsync("StartPlayer");
+                }
+                catch (NoDataException)
+                {
+                    await Clients.Group(roomId.ToString()).SendAsync("GenerateFailed");
+                }
+                catch (TokenExpiredException)
+                {
+                    await _spotifyService.Initialize();
+                    var algoTuple = await _algoService.GenerateTrackList(room.Users.ToList(), room.Options);
+                    room.Playlist = algoTuple.Item1;
+                    room.Profile = algoTuple.Item2;
 
-                await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
-                await Clients.Group(roomId.ToString()).SendAsync("StartPlayer"); 
+                    await Clients.Group(roomId.ToString()).SendAsync("SetState", JsonConvert.SerializeObject(room));
+                    await Clients.Group(roomId.ToString()).SendAsync("StartPlayer"); 
+                }            
             }
+            catch (Exception ex)
+            {
+              Console.WriteLine(ex.Message);
+            }
+
         }
 
         public async Task LoadPlaylist(int roomId, List<string> playlist)
